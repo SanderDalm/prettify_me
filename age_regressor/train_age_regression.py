@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
 from skimage.color import gray2rgb
 from scipy.misc import imread, imresize
-from imdbwiki.batch_generator import BatchGenerator
-from imdbwiki.age_regressor import AgeRegressor
+from age_regressor.batch_generator_imdbwiki import BatchGenerator
+from age_regressor.age_regressor import AgeRegressor
 
 ########################################
 # Set globals
