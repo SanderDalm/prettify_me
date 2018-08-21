@@ -17,11 +17,12 @@ DROPOUT = .5
 AUGMENT = 1
 DECAY = 1
 
-bg = BatchGenerator(path='/home/sander/data/prettify_me', height=WIDTH, width=WIDTH, n_train=20000, datasets=['utkf'])
+bg = BatchGenerator(path='/mnt/ssd/data/prettify_me', height=WIDTH, width=WIDTH, n_train=20000, datasets=['utkf'])
 
 #x, y = bg.generate_train_batch(1)
-len(bg.images_train)
-len(bg.images_val)
+#len(bg.images_train)
+#len(bg.images_val)
+
 
 nn = AgeRegressor(HEIGHT, WIDTH)
 #nn.load_weights('models/neural_net5000.ckpt')
