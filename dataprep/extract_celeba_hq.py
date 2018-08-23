@@ -140,26 +140,27 @@ def create_celebahq(celeba_dir, delta_dir):
                               dtype=np.uint8).reshape(3, 1024, 1024)
 
         # Apply delta image.
-        img = img + delta
+        #img = img + delta
 
         # Verify MD5.
         md5 = hashlib.md5()
         md5.update(img.tobytes())
         #assert md5.hexdigest() == fields['final_md5'][idx]
-        return img
+        return img, orig_file
 
-    images = []
-    for idx in [5]:#indices:
-        img = process_func(idx)
-        images.append(img)
+    for index, idx in enumerate(indices):
+        print(index)
+        img, orig_file = process_func(idx)
+        img = img.transpose(1,2,0)
+        img = PIL.Image.fromarray(img)
+        img.save(os.path.join(delta_dir, 'images', '{}.bmp'.format(orig_file)))
 
-    return images
 
 celeba_dir = '/mnt/ssd/data/prettify_me/celeba'
 delta_dir = '/mnt/ssd/data/prettify_me/celeba_hq'
 images = create_celebahq(celeba_dir, delta_dir)
 
-import matplotlib.pyplot as plt
-img = images[0]
-
-plt.imshow(img.transpose(1,2,0))
+# import matplotlib.pyplot as plt
+# img = images[0]
+#
+# plt.imshow(img.transpose(1,2,0))
