@@ -313,11 +313,23 @@ young_adults =  [x for x in image_paths if 18 < int(x.split('_')[-4].split('/')[
 adults =  [x for x in image_paths if 29 < int(x.split('_')[-4].split('/')[-1]) < 60]
 old =  [x for x in image_paths if 59 < int(x.split('_')[-4].split('/')[-1])]
 
-selection = [x for x in image_paths if x in asian and x in women and x in young_adults]
-print(len(selection))
+selection = [x for x in image_paths if x in white and x in men and x in young_adults]
+
 selection.sort()
+selection = selection[17:18]*250 + selection
 landmarks = [[(52, 70), (120, 70)] for _ in range(len(selection))]
 eye_pos = landmarks[0]
+
+
+avg_face = average_faces(image_paths=selection,
+                             landmarks=landmarks,
+                             eyecornerDst=eye_pos,
+                             h=h,
+                             w=w)
+
+plt.imshow(avg_face)
+
+
 
 avg_faces = []
 
