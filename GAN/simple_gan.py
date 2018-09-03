@@ -3,13 +3,13 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
-from age_regressor.batch_generator_imdbwiki import BatchGenerator
+from age_regressor.batch_generator import BatchGenerator
 import config
 
 def sample_Z(batch_size, n):
     return np.random.uniform(-1., 1., size=[batch_size, n])
 
-def sample_data(m, n):
+def sample_data(batch_size):
     x, y = bg.generate_train_batch(batch_size)
     return x
 
@@ -19,7 +19,6 @@ def generator(Z, hsize=[16, 16], reuse=False):
         h1 = tf.layers.dense(Z, hsize[0], activation=tf.nn.leaky_relu)
         h2 = tf.layers.dense(h1, hsize[1], activation=tf.nn.leaky_relu)
         out = tf.layers.dense(h2, 2)
-
     return out
 
 def discriminator(X, hsize=[16, 16], reuse=False):
@@ -28,14 +27,16 @@ def discriminator(X, hsize=[16, 16], reuse=False):
         h2 = tf.layers.dense(h1, hsize[1], activation=tf.nn.leaky_relu)
         h3 = tf.layers.dense(h2, 2)
         out = tf.layers.dense(h3, 1)
-
     return out, h3
 
 
-bg = BatchGenerator(path=config.datadir, height=256, width=256, datasets=['utkf'])
+H = 200
+W = 200
+DIM = 256
+bg = BatchGenerator(path=config.datadir, height=H, width=W, datasets=['utkf'])
 
-X = tf.placeholder(tf.float32, [None, 2])
-Z = tf.placeholder(tf.float32, [None, 2])
+X = tf.placeholder(tf.float32, [None, H, W, 3])
+Z = tf.placeholder(tf.float32, [None, DIM])
 
 G_sample = generator(Z)
 r_logits, r_rep = discriminator(X)
