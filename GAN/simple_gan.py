@@ -1,4 +1,5 @@
 import tensorflow as tf
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -6,7 +7,7 @@ def sample_Z(m, n):
     return np.random.uniform(-1., 1., size=[m, n])
 
 def sample_data(m, n):
-    return np.random.uniform(4., 5., size=[m, n])
+    return np.random.uniform(8., 2., size=[m, n])
 
 
 def generator(Z, hsize=[16, 16], reuse=False):
@@ -53,7 +54,7 @@ batch_size = 4
 nd_steps = 10
 ng_steps = 10
 
-for i in range(1001):
+for i in range(10001):
     X_batch = sample_data(batch_size, 2)
     Z_batch = sample_Z(batch_size, 2)
 
@@ -66,4 +67,4 @@ for i in range(1001):
 
     rrep_gstep, grep_gstep = sess.run([r_rep, g_rep], feed_dict={X: X_batch, Z: Z_batch})
 
-print(5)
+print(sess.run([G_sample], feed_dict={Z: sample_Z(1, 2)}))
