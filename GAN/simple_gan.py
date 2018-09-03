@@ -3,11 +3,15 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
-def sample_Z(m, n):
-    return np.random.uniform(-1., 1., size=[m, n])
+from age_regressor.batch_generator_imdbwiki import BatchGenerator
+import config
+
+def sample_Z(batch_size, n):
+    return np.random.uniform(-1., 1., size=[batch_size, n])
 
 def sample_data(m, n):
-    return np.random.uniform(8., 2., size=[m, n])
+    x, y = bg.generate_train_batch(batch_size)
+    return x
 
 
 def generator(Z, hsize=[16, 16], reuse=False):
@@ -18,7 +22,6 @@ def generator(Z, hsize=[16, 16], reuse=False):
 
     return out
 
-
 def discriminator(X, hsize=[16, 16], reuse=False):
     with tf.variable_scope("GAN/Discriminator", reuse=reuse):
         h1 = tf.layers.dense(X, hsize[0], activation=tf.nn.leaky_relu)
@@ -28,6 +31,8 @@ def discriminator(X, hsize=[16, 16], reuse=False):
 
     return out, h3
 
+
+bg = BatchGenerator(path=config.datadir, height=256, width=256, datasets=['utkf'])
 
 X = tf.placeholder(tf.float32, [None, 2])
 Z = tf.placeholder(tf.float32, [None, 2])
