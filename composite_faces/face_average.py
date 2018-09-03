@@ -287,7 +287,7 @@ def average_faces(image_paths,
 # UTKF dataset
 h = 200
 w = 200
-image_paths = glob('/home/sander/data/prettify_me/UTKFace/*.jpg')
+image_paths = glob('/mnt/ssd/data/prettify_me/UTKFace/*.jpg')
 mislabeled = []
 
 for x in image_paths:
@@ -313,13 +313,12 @@ young_adults =  [x for x in image_paths if 18 < int(x.split('_')[-4].split('/')[
 adults =  [x for x in image_paths if 29 < int(x.split('_')[-4].split('/')[-1]) < 60]
 old =  [x for x in image_paths if 59 < int(x.split('_')[-4].split('/')[-1])]
 
-selection = [x for x in image_paths if x in white and x in men and x in young_adults]
+selection = [x for x in image_paths if x in asian and x in women and x in young_adults]
 
 selection.sort()
-selection = selection[17:18]*250 + selection
+selection = selection[23:24]*400 + selection
 landmarks = [[(52, 70), (120, 70)] for _ in range(len(selection))]
 eye_pos = landmarks[0]
-
 
 avg_face = average_faces(image_paths=selection,
                              landmarks=landmarks,
@@ -330,28 +329,28 @@ avg_face = average_faces(image_paths=selection,
 plt.imshow(avg_face)
 
 
-
-avg_faces = []
-
-for i in range(9):
-    indices = np.random.choice(range(len(selection)), 40)
-    subselection = np.array(selection)[indices]
-    landmarks = [[(52, 70), (120, 70)] for _ in range(len(subselection))]
-
-    avg_face = average_faces(image_paths=subselection,
-                             landmarks=landmarks,
-                             eyecornerDst=eye_pos,
-                             h=h,
-                             w=w)
-    avg_faces.append(avg_face)
-
-fig, axs = plt.subplots(3, 3, facecolor='w', edgecolor='k')
-fig.subplots_adjust(hspace=.001, wspace=.001)
-axs = axs.ravel()
-
-for i in range(9):
-    axs[i].imshow(avg_faces[i])
-plt.show()
+#
+# avg_faces = []
+#
+# for i in range(9):
+#     indices = np.random.choice(range(len(selection)), 40)
+#     subselection = np.array(selection)[indices]
+#     landmarks = [[(52, 70), (120, 70)] for _ in range(len(subselection))]
+#
+#     avg_face = average_faces(image_paths=subselection,
+#                              landmarks=landmarks,
+#                              eyecornerDst=eye_pos,
+#                              h=h,
+#                              w=w)
+#     avg_faces.append(avg_face)
+#
+# fig, axs = plt.subplots(3, 3, facecolor='w', edgecolor='k')
+# fig.subplots_adjust(hspace=.001, wspace=.001)
+# axs = axs.ravel()
+#
+# for i in range(9):
+#     axs[i].imshow(avg_faces[i])
+# plt.show()
 
 # Celeba dataset
 # h = 218
