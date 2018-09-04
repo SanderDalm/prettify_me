@@ -30,7 +30,7 @@ def UpConv2D(x, filters, kernel_size, stride, padding='same'):
                                       activity_regularizer=tf.keras.regularizers.l2(l=0.01),
                                       padding=padding)
 
-def sample_Z(batch_size, dim=[25, 25, 32]):
+def sample_noise(batch_size, dim=[25, 25, 32]):
     return np.random.uniform(-1., 1., size=[batch_size]+dim)
 
 def generator(noise, reuse=False):
@@ -111,12 +111,12 @@ for i in range(100):
 
     for _ in range(nd_steps):
         img_batch, _ = bg.generate_train_batch(batch_size)
-        noise_batch = sample_Z(batch_size, [NOISE_DIM1, NOISE_DIM2, NOISE_DIM3])
+        noise_batch = sample_noise(batch_size, [NOISE_DIM1, NOISE_DIM2, NOISE_DIM3])
         _, dloss = sess.run([disc_step, disc_loss], feed_dict={real_img: img_batch, noise: noise_batch})
 
     for _ in range(ng_steps):
         img_batch, _ = bg.generate_train_batch(batch_size)
-        noise_batch = sample_Z(batch_size, [NOISE_DIM1, NOISE_DIM2, NOISE_DIM3])
+        noise_batch = sample_noise(batch_size, [NOISE_DIM1, NOISE_DIM2, NOISE_DIM3])
         _, gloss = sess.run([gen_step, gen_loss], feed_dict={noise: noise_batch})
 
     d_losses.append(dloss)
@@ -125,7 +125,7 @@ for i in range(100):
 plt.plot(d_losses, alpha =.8, color='g')
 plt.plot(g_losses, alpha =.8, color='b')
 
-generated_image =  sess.run([fake_img], feed_dict={noise: sample_Z(batch_size, [NOISE_DIM1, NOISE_DIM2, NOISE_DIM3])})
+generated_image =  sess.run([fake_img], feed_dict={noise: sample_noise(batch_size, [NOISE_DIM1, NOISE_DIM2, NOISE_DIM3])})
 img = generated_image[0][0]
 img
 plt.imshow(img)
