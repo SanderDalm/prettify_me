@@ -30,8 +30,10 @@ def UpConv2D(x, filters, kernel_size, stride, padding='same'):
                                       activity_regularizer=tf.keras.regularizers.l2(l=0.01),
                                       padding=padding)
 
+
 def sample_noise(batch_size, dim=[25, 25, 32]):
-    return np.random.uniform(-1., 1., size=[batch_size]+dim)
+    return np.random.uniform(0., 1., size=[batch_size]+dim)
+
 
 def generator(noise, reuse=False):
     with tf.variable_scope("GAN/Generator", reuse=reuse):
@@ -39,7 +41,7 @@ def generator(noise, reuse=False):
         x = UpConv2D(x=x, filters=16, kernel_size=3, stride=2)
         x = UpConv2D(x=x, filters=16, kernel_size=3, stride=2)
         x = UpConv2D(x=x, filters=3, kernel_size=3, stride=2)
-    return x
+    return tf.nn.sigmoid(x)
 
 
 def discriminator(img, reuse=False):
@@ -72,10 +74,12 @@ def discriminator(img, reuse=False):
 
     return x
 
-H = 200
-W = 200
-NOISE_DIM1, NOISE_DIM2, NOISE_DIM3 = 25, 25, 32
+H = 32
+W = 32
+NOISE_DIM1, NOISE_DIM2, NOISE_DIM3 = int(H/8), int(W/8), 1
 bg = BatchGenerator(path=config.datadir, height=H, width=W, datasets=['utkf'])
+#x, y = bg.generate_train_batch(32)
+#plt.imshow(x[0])
 
 # Define graph
 real_img = tf.placeholder(tf.float32, [None, H, W, 3])
@@ -95,8 +99,7 @@ disc_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GAN/Discrimi
 gen_step = tf.train.AdamOptimizer(learning_rate=0.0001, beta1=.5, epsilon=.1).minimize(gen_loss, var_list=gen_vars)  # G Train step
 disc_step = tf.train.AdamOptimizer(learning_rate=0.0001, beta1=.5, epsilon=.1).minimize(disc_loss, var_list=disc_vars)  # D Train step
 
-# sess = tf.Session(config=config)
-sess = tf.Session()
+sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 tf.global_variables_initializer().run(session=sess)
 
 batch_size = 32
@@ -122,10 +125,13 @@ for i in range(100):
     d_losses.append(dloss)
     g_losses.append(gloss)
 
-plt.plot(d_losses, alpha =.8, color='g')
-plt.plot(g_losses, alpha =.8, color='b')
+plt.plot(d_losses, alpha=.8, color='g')
+plt.plot(g_losses, alpha=.8, color='b')
 
-generated_image =  sess.run([fake_img], feed_dict={noise: sample_noise(batch_size, [NOISE_DIM1, NOISE_DIM2, NOISE_DIM3])})
-img = generated_image[0][0]
+generated_image = sess.run([fake_img], feed_dict={noise: sample_noise(batch_size, [NOISE_DIM1, NOISE_DIM2, NOISE_DIM3])})
+img = generated_image[0][5]
 img
+img.shape
+np.min(img)
+np.max(img)
 plt.imshow(img)
