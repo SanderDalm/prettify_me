@@ -78,7 +78,7 @@ H = 32
 W = 32
 NOISE_DIM1, NOISE_DIM2, NOISE_DIM3 = int(H/8), int(W/8), 1
 bg = BatchGenerator(path=config.datadir, height=H, width=W, datasets=['utkf'])
-x, y = bg.generate_train_batch(32)
+#x, y = bg.generate_train_batch(32)
 #plt.imshow(x[0])
 
 # Define graph
@@ -96,11 +96,15 @@ gen_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=f_logit
 gen_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GAN/Generator")
 disc_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GAN/Discriminator")
 
-gen_step = tf.train.AdamOptimizer(learning_rate=0.0001, beta1=.5, epsilon=.1).minimize(gen_loss, var_list=gen_vars)  # G Train step
-disc_step = tf.train.AdamOptimizer(learning_rate=0.0001, beta1=.5, epsilon=.1).minimize(disc_loss, var_list=disc_vars)  # D Train step
+gen_step = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(gen_loss, var_list=gen_vars)  # G Train step
+disc_step = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(disc_loss, var_list=disc_vars)  # D Train step
 
 sess = tf.Session(config=tf.ConfigProto())#log_device_placement=True
 tf.global_variables_initializer().run(session=sess)
+
+sess.saver = tf.train.Saver(max_to_keep=None,
+                                    name='checkpoint_saver')
+
 
 batch_size = 32
 nd_steps = 10
@@ -110,7 +114,7 @@ ng_steps = 10
 d_losses = []
 g_losses = []
 
-for i in range(1000):
+for i in range(10000):
     print(i)
 
     for _ in range(nd_steps):
@@ -119,12 +123,17 @@ for i in range(1000):
         _, dloss = sess.run([disc_step, disc_loss], feed_dict={real_img: img_batch, noise: noise_batch})
     d_losses.append(dloss)
 
-    if i > 200:
+    if i > 500:
         for _ in range(ng_steps):
             img_batch, _ = bg.generate_train_batch(batch_size)
             noise_batch = sample_noise(batch_size, [NOISE_DIM1, NOISE_DIM2, NOISE_DIM3])
             _, gloss = sess.run([gen_step, gen_loss], feed_dict={noise: noise_batch})
         g_losses.append(gloss)
+
+    if i % 100 == 0:
+        checkpoint = 'models/' + str(i) + '.ckpt'
+        sess.saver.save(sess, checkpoint)
+        print('Saved to {}'.format(checkpoint))
 
 
 plt.plot(d_losses, alpha=.8, color='g')
