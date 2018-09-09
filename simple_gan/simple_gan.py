@@ -37,9 +37,9 @@ def sample_noise(batch_size, dim=[25, 25, 32]):
 
 def generator(noise, reuse=False):
     with tf.variable_scope("GAN/Generator", reuse=reuse):
-        x = UpConv2D(x=noise, filters=16, kernel_size=3, stride=1)
-        x = UpConv2D(x=x, filters=16, kernel_size=3, stride=2)
-        x = UpConv2D(x=x, filters=16, kernel_size=3, stride=2)
+        x = UpConv2D(x=noise, filters=64, kernel_size=3, stride=1)
+        x = UpConv2D(x=x, filters=128, kernel_size=3, stride=2)
+        x = UpConv2D(x=x, filters=512, kernel_size=3, stride=2)
         x = UpConv2D(x=x, filters=3, kernel_size=3, stride=2)
     return tf.clip_by_value(x, 0, 1)
 
@@ -47,7 +47,7 @@ def generator(noise, reuse=False):
 def discriminator(img, reuse=False):
     with tf.variable_scope("GAN/Discriminator", reuse=reuse):
 
-        filter_size = 4
+        filter_size = 32
         x = Conv2D(img, filters=filter_size, kernel_size=3, stride=1)
         x = Conv2D(x, filters=filter_size, kernel_size=3, stride=1)
         x = tf.layers.max_pooling2d(x, pool_size=2, strides=2)
@@ -79,7 +79,7 @@ W = 32
 NOISE_DIM1, NOISE_DIM2, NOISE_DIM3 = int(H/8), int(W/8), 1
 bg = BatchGenerator(path=config.datadir, height=H, width=W, datasets=['utkf'])
 #x, y = bg.generate_train_batch(32)
-#plt.imshow(x[0])
+#plt.imshow(x[1])
 
 # Define graph
 real_img = tf.placeholder(tf.float32, [None, H, W, 3])
@@ -96,17 +96,13 @@ gen_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=f_logit
 gen_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GAN/Generator")
 disc_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GAN/Discriminator")
 
-gen_step = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(gen_loss, var_list=gen_vars)  # G Train step
-disc_step = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(disc_loss, var_list=disc_vars)  # D Train step
+gen_step = tf.train.AdamOptimizer(learning_rate=0.0001, beta1=.5, epsilon=.1).minimize(gen_loss, var_list=gen_vars)  # G Train step
+disc_step = tf.train.AdamOptimizer(learning_rate=0.0001, beta1=.5, epsilon=.1).minimize(disc_loss, var_list=disc_vars)  # D Train step
 
 sess = tf.Session(config=tf.ConfigProto())#log_device_placement=True
 tf.global_variables_initializer().run(session=sess)
 
-sess.saver = tf.train.Saver(max_to_keep=None,
-                                    name='checkpoint_saver')
-
-
-batch_size = 32
+batch_size = 128
 nd_steps = 10
 ng_steps = 10
 
@@ -114,7 +110,7 @@ ng_steps = 10
 d_losses = []
 g_losses = []
 
-for i in range(10000):
+for i in range(2500):
     print(i)
 
     for _ in range(nd_steps):
@@ -130,17 +126,12 @@ for i in range(10000):
             _, gloss = sess.run([gen_step, gen_loss], feed_dict={noise: noise_batch})
         g_losses.append(gloss)
 
-    if i % 100 == 0:
-        checkpoint = 'models/' + str(i) + '.ckpt'
-        sess.saver.save(sess, checkpoint)
-        print('Saved to {}'.format(checkpoint))
-
 
 plt.plot(d_losses, alpha=.8, color='g')
 plt.plot(g_losses, alpha=.8, color='b')
 
 generated_image = sess.run([fake_img], feed_dict={noise: sample_noise(batch_size, [NOISE_DIM1, NOISE_DIM2, NOISE_DIM3])})
-img = generated_image[0][0]
+img = generated_image[0][1]
 img
 img.shape
 np.min(img)
