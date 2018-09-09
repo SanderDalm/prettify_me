@@ -53,4 +53,3 @@ def generator(img, scope, dim=64, train=True):
         net = tf.nn.tanh(net)
 
         return net
-discriminator
