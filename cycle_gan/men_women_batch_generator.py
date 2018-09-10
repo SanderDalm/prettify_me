@@ -56,7 +56,7 @@ class Men_Women_BatchGenerator:
         return np.array(men), np.array(women)
 
 # import config
-# bg = BatchGenerator(path=config.datadir, height=200, width=200)
+# bg = Men_Women_BatchGenerator(path=config.datadir, height=200, width=200)
 #
 # men, women = bg.generate_batch(16)
 #

@@ -4,37 +4,26 @@ from __future__ import print_function
 
 import argparse
 from functools import partial
-from glob import glob
 
-import models
 import numpy as np
+from scipy.misc import imsave
 import tensorflow as tf
 
+from cycle_gan.men_women_batch_generator import Men_Women_BatchGenerator
+import cycle_gan.nn as nn
+import config
 
-#""" param """
-parser = argparse.ArgumentParser(description='')
-parser.add_argument('--dataset', dest='dataset', default='horse2zebra', help='which dataset to use')
-parser.add_argument('--load_size', dest='load_size', type=int, default=286, help='scale images to this size')
-parser.add_argument('--crop_size', dest='crop_size', type=int, default=256, help='then crop to this size')
-parser.add_argument('--epoch', dest='epoch', type=int, default=200, help='# of epoch')
-parser.add_argument('--batch_size', dest='batch_size', type=int, default=1, help='# images in a batch')
-parser.add_argument('--lr', dest='lr', type=float, default=0.0002, help='initial learning rate for adam')
-args = parser.parse_args()
-
-dataset = args.dataset
-load_size = args.load_size
-crop_size = args.crop_size
-epoch = args.epoch
-batch_size = args.batch_size
-lr = args.lr
-
+crop_size = 200
+lr = .0001
+batch_size = 8
+batchgen = Men_Women_BatchGenerator(config.datadir)
 
 #""" graph """
 # models
-generator_a2b = partial(models.generator, scope='a2b')
-generator_b2a = partial(models.generator, scope='b2a')
-discriminator_a = partial(models.discriminator, scope='a')
-discriminator_b = partial(models.discriminator, scope='b')
+generator_a2b = partial(nn.generator, scope='a2b')
+generator_b2a = partial(nn.generator, scope='b2a')
+discriminator_a = partial(nn.discriminator, scope='a')
+discriminator_b = partial(nn.discriminator, scope='b')
 
 # Placeholders
 a_real = tf.placeholder(tf.float32, shape=[None, crop_size, crop_size, 3])
@@ -98,34 +87,38 @@ config = tf.ConfigProto(allow_soft_placement=True)
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
+init_op = tf.global_variables_initializer()
+sess.run(init_op)
 
 #''' saver '''
-saver = tf.train.Saver(max_to_keep=5)
+saver = tf.train.Saver(max_to_keep=None)
 
 #'''train'''
 for i in range(1000):
-
-    batchgen = None
-    a_real_batch, b_real_batch = batchgen.generate_batch()
+    print(i)
+    a_real_batch, b_real_batch = batchgen.generate_batch(batch_size)
+    print(a_real_batch.shape, b_real_batch.shape)
 
     # train G a+b
-    g_summary_opt, _ = sess.run([g_train_op], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
+    g_summary_opt = sess.run([g_train_op], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
 
     # train D a
-    d_summary_a_opt, _ = sess.run([d_a_train_op], feed_dict={a_real: a_real_batch})
+    d_summary_a_opt = sess.run([d_a_train_op], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
 
     # train D b
-    d_summary_b_opt, _ = sess.run([d_b_train_op], feed_dict={b_real: b_real_batch})
+    d_summary_b_opt = sess.run([d_b_train_op], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
 
-    # save
+    # save model
     if i + 1 % 1000 == 0:
-        save_path = saver.save(sess, 'path')
-        print('Model saved in file: % s' % save_path)
+        # TODO save model
+        save_path = saver.save(sess, 'cycle_gan/models/nn_{}.ckpt'.format(i))
 
-    # sample
+
+    # save sample
     if i + 1 % 100 == 0:
 
-        a2b_output, a2b2a_output, b2a_output, b2a2b_output = sess.run([a2b, a2b2a, b2a, b2a2b], feed_dict={a_real: a_real, b_real: b_real})
-        sample = np.concatenate((a2b_output, a2b2a_output, b2a_output, b2a2b_output), axis=0)
-        save_dir = '/outputs/'
-        # TO DO: save
+        a2b_output, a2b2a_output, b2a_output, b2a2b_output = sess.run([a2b, a2b2a, b2a, b2a2b], feed_dict={a_real: a_real_batch[0:1], b_real: b_real_batch[0:1]})
+        sample = np.concatenate([(a_real_batch[0:1]*2)-1, a2b_output, a2b2a_output, (b_real_batch[0:1]*2)-1, b2a_output, b2a2b_output], axis=1)
+        sample = sample.reshape(crop_size*6, crop_size, 3)
+        save_path = 'cycle_gan/samples/sample_{}.jpg'.format(i)
+        imsave(save_path, sample)
