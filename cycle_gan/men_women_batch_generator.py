@@ -4,7 +4,7 @@ from scipy.misc import imread, imresize
 import numpy as np
 from glob import glob
 
-class BatchGenerator:
+class Men_Women_BatchGenerator:
 
     def __init__(self, path=None, height=200, width=200):
 
