@@ -1,8 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import argparse
 from functools import partial
 
 import numpy as np
@@ -13,10 +8,10 @@ from cycle_gan.men_women_batch_generator import Men_Women_BatchGenerator
 import cycle_gan.nn as nn
 import config
 
-crop_size = 200
+crop_size = 100
 lr = .0001
-batch_size = 8
-batchgen = Men_Women_BatchGenerator(config.datadir)
+batch_size = 16
+batchgen = Men_Women_BatchGenerator(config.datadir, height=crop_size, width=crop_size)
 
 #""" graph """
 # models
@@ -94,10 +89,9 @@ sess.run(init_op)
 saver = tf.train.Saver(max_to_keep=None)
 
 #'''train'''
-for i in range(1000):
-    print(i)
+for i in range(1, 30001):
+
     a_real_batch, b_real_batch = batchgen.generate_batch(batch_size)
-    print(a_real_batch.shape, b_real_batch.shape)
 
     # train G a+b
     g_summary_opt = sess.run([g_train_op], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
@@ -108,17 +102,20 @@ for i in range(1000):
     # train D b
     d_summary_b_opt = sess.run([d_b_train_op], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
 
-    # save model
-    if i + 1 % 1000 == 0:
-        # TODO save model
-        save_path = saver.save(sess, 'cycle_gan/models/nn_{}.ckpt'.format(i))
-
-
     # save sample
-    if i + 1 % 100 == 0:
-
-        a2b_output, a2b2a_output, b2a_output, b2a2b_output = sess.run([a2b, a2b2a, b2a, b2a2b], feed_dict={a_real: a_real_batch[0:1], b_real: b_real_batch[0:1]})
-        sample = np.concatenate([(a_real_batch[0:1]*2)-1, a2b_output, a2b2a_output, (b_real_batch[0:1]*2)-1, b2a_output, b2a2b_output], axis=1)
-        sample = sample.reshape(crop_size*6, crop_size, 3)
+    if i % 100 == 0:
+        a2b_output, a2b2a_output, b2a_output, b2a2b_output = sess.run([a2b, a2b2a, b2a, b2a2b],
+                                                                      feed_dict={a_real: a_real_batch[0:1],
+                                                                                 b_real: b_real_batch[0:1]})
+        sample = np.concatenate(
+            [(a_real_batch[0:1] * 2) - 1, a2b_output, a2b2a_output, (b_real_batch[0:1] * 2) - 1, b2a_output,
+             b2a2b_output], axis=1)
+        sample = sample.reshape(crop_size * 6, crop_size, 3)
         save_path = 'cycle_gan/samples/sample_{}.jpg'.format(i)
         imsave(save_path, sample)
+        print('Sample saved to {}.'.format(save_path))
+
+    # save model
+    if i % 1000 == 0:
+        save_path = saver.save(sess, 'cycle_gan/models/nn_{}.ckpt'.format(i))
+        print('Model saved to {}.'.format(save_path))
