@@ -121,17 +121,7 @@ saver = tf.train.Saver(max_to_keep=None)
 ###############################
 # Restore facenet
 ###############################
-# trainable_variables = tf.trainable_variables()
-# facenet_variables = [var for var in trainable_variables if var.name.find('facenet') > -1]
-#
-# #for var in facenet_variables:
-# #    print(var.name)
-#
-# restorer = tf.train.Saver(var_list=facenet_variables)
-# restorer.restore(sess, 'identity_gan/20180402-114759/model-20180402-114759.ckpt-275')
-
-#############
-def print_tensors_in_checkpoint_file(file_name):
+def get_tensors_in_checkpoint_file(file_name):
     from tensorflow.python import pywrap_tensorflow
     reader = pywrap_tensorflow.NewCheckpointReader(file_name)
 
@@ -145,32 +135,26 @@ def print_tensors_in_checkpoint_file(file_name):
 
     return value_dict
 
-value_dict = print_tensors_in_checkpoint_file('identity_gan/20180402-114759/model-20180402-114759.ckpt-275')
+value_dict = get_tensors_in_checkpoint_file('identity_gan/20180402-114759/model-20180402-114759.ckpt-275')
 
 for varname, value in value_dict.items():
-    print(varname)
+    #print(varname)
     variable = [var for var in tf.trainable_variables() if (var.name == 'facenet/'+varname+':0') or (var.name == 'facenet/InceptionResnetV1/'+varname+':0')]
     if len(variable) > 0:
-        print(variable)
+        #print(variable)
         variable[0].assign(value)
-
-#trainable_variables = tf.trainable_variables()
-#facenet_variables = [var for var in trainable_variables if var.name.find('facenet') > -1]
-
-#for var in facenet_variables:
-#    print(var.name)
 
 #####################################
 # train
 #####################################
 
 #'''train'''
-for i in range(1, 30001):
+for i in range(1, 1001):
 
     a_real_batch, b_real_batch = batchgen.generate_batch(batch_size)
 
     # train G a+b
-    g_summary_opt = sess.run([g_train_op], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
+    g_summary_opt, id1, id2 = sess.run([g_train_op, identity_a_before, identity_b_after], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
 
     # train D a
     d_summary_a_opt = sess.run([d_a_train_op], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
@@ -187,11 +171,11 @@ for i in range(1, 30001):
             [(a_real_batch[0:1] * 2) - 1, a2b_output, a2b2a_output, (b_real_batch[0:1] * 2) - 1, b2a_output,
              b2a2b_output], axis=1)
         sample = sample.reshape(crop_size * 6, crop_size, 3)
-        save_path = 'cycle_gan/samples/sample_{}.jpg'.format(i)
+        save_path = 'identity_gan/samples/sample_{}.jpg'.format(i)
         imsave(save_path, sample)
         print('Sample saved to {}.'.format(save_path))
 
     # save model
     if i % 1000 == 0:
-        save_path = saver.save(sess, 'cycle_gan/saved_models/nn_{}.ckpt'.format(i))
+        save_path = saver.save(sess, 'identity_gan/saved_models/nn_{}.ckpt'.format(i))
         print('Model saved to {}.'.format(save_path))
