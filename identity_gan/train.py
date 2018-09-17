@@ -1,8 +1,10 @@
 from functools import partial
 
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.misc import imsave
 import tensorflow as tf
+from tensorflow.python import pywrap_tensorflow
 import importlib
 
 from cycle_gan.men_women_batch_generator import Men_Women_BatchGenerator
@@ -23,8 +25,9 @@ network = importlib.import_module('identity_gan.models.inception_resnet_v1')
 
 def get_identity_vector(img, reuse):
     with tf.variable_scope('facenet', reuse=reuse):
-        prelogits, _ = network.inference(images=img, keep_probability=1, phase_train=False,
+        prelogits, endpoints = network.inference(images=img, keep_probability=1, phase_train=False,
                                             bottleneck_layer_size=512, weight_decay=0.0)
+
 
         embeddings = tf.nn.l2_normalize(prelogits, 1, 1e-10, name='embeddings')
         return embeddings
@@ -122,39 +125,40 @@ saver = tf.train.Saver(max_to_keep=None)
 # Restore facenet
 ###############################
 def get_tensors_in_checkpoint_file(file_name):
-    from tensorflow.python import pywrap_tensorflow
     reader = pywrap_tensorflow.NewCheckpointReader(file_name)
-
     var_to_shape_map = reader.get_variable_to_shape_map()
-
     value_dict = {}
     for key in sorted(var_to_shape_map):
         value_dict[key] = reader.get_tensor(key)
-        #print("tensor_name: ", key)
-        #print(reader.get_tensor(key))
-
     return value_dict
 
 value_dict = get_tensors_in_checkpoint_file('identity_gan/20180402-114759/model-20180402-114759.ckpt-275')
 
-for varname, value in value_dict.items():
-    #print(varname)
-    variable = [var for var in tf.trainable_variables() if (var.name == 'facenet/'+varname+':0') or (var.name == 'facenet/InceptionResnetV1/'+varname+':0')]
-    if len(variable) > 0:
-        #print(variable)
-        variable[0].assign(value)
+for var in tf.trainable_variables():
+    print(var.name)
+
+facenet_variables = [var for var in tf.trainable_variables() if var.name.find('facenet') > -1]
+
+for var in facenet_variables:
+    varname = var.name[8:-2]
+    value = value_dict[varname]
+    var.assign(value)
+    #print(var.name)
+    #print(value)
 
 #####################################
 # train
 #####################################
 
 #'''train'''
-for i in range(1, 1001):
+id_losses = []
+for i in range(1, 10001):
 
     a_real_batch, b_real_batch = batchgen.generate_batch(batch_size)
 
     # train G a+b
-    g_summary_opt, id1, id2 = sess.run([g_train_op, identity_a_before, identity_b_after], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
+    g_summary_opt, id_loss = sess.run([g_train_op, identity_loss], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
+    id_losses.append(id_loss)
 
     # train D a
     d_summary_a_opt = sess.run([d_a_train_op], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
@@ -179,3 +183,5 @@ for i in range(1, 1001):
     if i % 1000 == 0:
         save_path = saver.save(sess, 'identity_gan/saved_models/nn_{}.ckpt'.format(i))
         print('Model saved to {}.'.format(save_path))
+
+plt.plot(id_losses)
