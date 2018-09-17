@@ -23,8 +23,6 @@ discriminator_b = partial(nn.discriminator, scope='b')
 # Placeholders
 a_real = tf.placeholder(tf.float32, shape=[None, crop_size, crop_size, 3])
 b_real = tf.placeholder(tf.float32, shape=[None, crop_size, crop_size, 3])
-# a2b_sample = tf.placeholder(tf.float32, shape=[None, crop_size, crop_size, 3])
-# b2a_sample = tf.placeholder(tf.float32, shape=[None, crop_size, crop_size, 3])
 
 # Generator outputs
 a2b = generator_a2b(a_real)
@@ -43,17 +41,20 @@ b2a_logit = discriminator_a(b2a)
 b_logit = discriminator_b(b_real)
 a2b_logit = discriminator_b(a2b)
 
-# Sample ??
-# b2a_sample_logit = discriminator_a(b2a_sample)
-# a2b_sample_logit = discriminator_b(a2b_sample)
 
 # Generator losses
+# Domain loss
 g_loss_a2b = tf.losses.mean_squared_error(a2b_logit, tf.ones_like(a2b_logit))
 g_loss_b2a = tf.losses.mean_squared_error(b2a_logit, tf.ones_like(b2a_logit))
+
+# Cycle loss
 cyc_loss_a = tf.losses.absolute_difference(a_real, a2b2a)
 cyc_loss_b = tf.losses.absolute_difference(b_real, b2a2b)
-g_loss = g_loss_a2b + g_loss_b2a + cyc_loss_a * 10.0 + cyc_loss_b * 10.0
 
+# Sum loss
+g_loss = g_loss_a2b + g_loss_b2a + cyc_loss_a * 10.0 + cyc_loss_b * 10.0 + identity_loss
+
+# Discriminator losses
 # Discriminator a losses
 d_loss_a_real = tf.losses.mean_squared_error(a_logit, tf.ones_like(a_logit))
 d_loss_b2a = tf.losses.mean_squared_error(b2a_logit, tf.zeros_like(b2a_logit))
