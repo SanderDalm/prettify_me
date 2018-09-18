@@ -85,7 +85,7 @@ identity_b_before = get_identity_vector(b_real, reuse=True)
 identity_b_after = get_identity_vector(b2a, reuse=True)
 identity_diff_b = tf.norm(identity_b_before - identity_b_after, axis=1)
 
-identity_loss = identity_diff_a + identity_diff_b
+identity_loss = tf.reduce_mean(identity_diff_a + identity_diff_b)
 
 # Sum loss
 g_loss = g_loss_a2b + g_loss_b2a + cyc_loss_a * 10.0 + cyc_loss_b * 10.0 + identity_loss
@@ -143,7 +143,7 @@ for var in facenet_variables:
     varname = var.name[8:-2]
     value = value_dict[varname]
     assign_ops.append(var.assign(value))
-    print(var.name)
+    #print(var.name)
 sess.run(assign_ops)
 
 #####################################
@@ -151,15 +151,16 @@ sess.run(assign_ops)
 #####################################
 #'''train'''
 
-id_losses = []
+
+losses = []
 for i in range(0, 10001):
     a_real_batch, b_real_batch = batchgen.generate_batch(batch_size)
     a_real_batch, b_real_batch = (a_real_batch*2)-1, (b_real_batch*2)-1
 
     # train G a+b
-    _, id_loss = sess.run([g_train_op, identity_loss], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
+    _, glossa, glossb, cyclossa, cyclossb, idloss = sess.run([g_train_op, g_loss_a2b, g_loss_b2a, cyc_loss_a, cyc_loss_b, identity_loss], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
 
-    id_losses.append(id_loss)
+    losses.append((glossa, glossb, cyclossa, cyclossb, idloss))
 
     # train D a
     d_summary_a_opt = sess.run([d_a_train_op], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
@@ -185,4 +186,18 @@ for i in range(0, 10001):
         save_path = saver.save(sess, 'identity_gan/saved_models/nn_{}.ckpt'.format(i))
         print('Model saved to {}.'.format(save_path))
 
+genlosses_a = [x[0] for x in losses]
+genlosses_b = [x[1] for x in losses]
+
+cyc_losses_a = [x[2] for x in losses]
+cyc_losses_b = [x[3] for x in losses]
+
+id_losses = [x[4] for x in losses]
+
+
+plt.plot(genlosses_a)
+plt.plot(genlosses_b)
+plt.plot(cyc_losses_a)
+plt.plot(cyc_losses_b)
 plt.plot(id_losses)
+plt.legend(['genloss a', 'genloss b', 'cycloss a', 'cyclosss b', 'idloss'])
