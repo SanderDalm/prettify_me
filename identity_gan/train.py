@@ -35,7 +35,7 @@ def get_identity_vector(img, reuse):
 ################################
 # Cycle gan
 ################################
-crop_size = 100
+crop_size = 152
 lr = .0001
 batch_size = 16
 batchgen = Men_Women_BatchGenerator(config.datadir, height=crop_size, width=crop_size)
@@ -58,7 +58,6 @@ a2b2a = generator_b2a(a2b)
 b2a = generator_b2a(b_real)
 b2a2b = generator_a2b(b2a)
 
-
 # Discriminator outputs
 # a2b
 a_logit = discriminator_a(a_real)
@@ -67,7 +66,6 @@ b2a_logit = discriminator_a(b2a)
 # b2a
 b_logit = discriminator_b(b_real)
 a2b_logit = discriminator_b(a2b)
-
 
 # Generator losses
 # Domain loss
@@ -132,32 +130,35 @@ def get_tensors_in_checkpoint_file(file_name):
         value_dict[key] = reader.get_tensor(key)
     return value_dict
 
-value_dict = get_tensors_in_checkpoint_file('identity_gan/20180402-114759/model-20180402-114759.ckpt-275')
+#value_dict = get_tensors_in_checkpoint_file('identity_gan/20180402-114759/model-20180402-114759.ckpt-275')
+value_dict = get_tensors_in_checkpoint_file('identity_gan/20180408-102900/model-20180408-102900.ckpt-90')
 
-for var in tf.trainable_variables():
-    print(var.name)
+#for var in tf.trainable_variables():
+#    print(var.name)
 
 facenet_variables = [var for var in tf.trainable_variables() if var.name.find('facenet') > -1]
 
+assign_ops = []
 for var in facenet_variables:
     varname = var.name[8:-2]
     value = value_dict[varname]
-    var.assign(value)
-    #print(var.name)
-    #print(value)
+    assign_ops.append(var.assign(value))
+    print(var.name)
+sess.run(assign_ops)
 
 #####################################
 # train
 #####################################
-
 #'''train'''
-id_losses = []
-for i in range(1, 10001):
 
+id_losses = []
+for i in range(0, 10001):
     a_real_batch, b_real_batch = batchgen.generate_batch(batch_size)
+    a_real_batch, b_real_batch = (a_real_batch*2)-1, (b_real_batch*2)-1
 
     # train G a+b
-    g_summary_opt, id_loss = sess.run([g_train_op, identity_loss], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
+    _, id_loss = sess.run([g_train_op, identity_loss], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
+
     id_losses.append(id_loss)
 
     # train D a
@@ -172,7 +173,7 @@ for i in range(1, 10001):
                                                                       feed_dict={a_real: a_real_batch[0:1],
                                                                                  b_real: b_real_batch[0:1]})
         sample = np.concatenate(
-            [(a_real_batch[0:1] * 2) - 1, a2b_output, a2b2a_output, (b_real_batch[0:1] * 2) - 1, b2a_output,
+            [a_real_batch[0:1], a2b_output, a2b2a_output, b_real_batch[0:1], b2a_output,
              b2a2b_output], axis=1)
         sample = sample.reshape(crop_size * 6, crop_size, 3)
         save_path = 'identity_gan/samples/sample_{}.jpg'.format(i)
