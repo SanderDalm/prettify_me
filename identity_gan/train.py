@@ -7,7 +7,7 @@ import tensorflow as tf
 from tensorflow.python import pywrap_tensorflow
 import importlib
 
-from cycle_gan.men_women_batch_generator import Men_Women_BatchGenerator
+from cycle_gan.two_class_batch_generator import Men_Women_BatchGenerator
 import cycle_gan.nn as nn
 import config
 

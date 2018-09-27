@@ -2,6 +2,7 @@ from composite_faces.face_average import average_faces, readImages
 import matplotlib.pyplot as plt
 import numpy as np
 from glob import glob
+from scipy.misc import imsave
 
 # UTKF dataset
 h = 200
@@ -50,28 +51,22 @@ eye_pos = landmarks[0]
 #
 # plt.imshow(avg_face)
 
-avg_faces = []
-
-for i in range(9):
-    indices = np.random.choice(range(len(selection)), 50)
+def create_random_composite(selection, n):
+    indices = np.random.choice(range(len(selection)), n)
     subselection = np.array(selection)[indices]
     landmarks = [[(52, 70), (120, 70)] for _ in range(len(subselection))]
 
-    avg_face = average_faces(image_paths=subselection,
+    composite = average_faces(image_paths=subselection,
                              landmarks=landmarks,
                              eyecornerDst=eye_pos,
                              h=h,
                              w=w)
 
-    avg_faces.append(avg_face)
+    return composite
 
-fig, axs = plt.subplots(3, 3, facecolor='w', edgecolor='k')
-fig.subplots_adjust(hspace=.001, wspace=.001)
-axs = axs.ravel()
-
-for i in range(9):
-    axs[i].imshow(avg_faces[i])
-plt.show()
+for i in range(100):
+    composite = create_random_composite(selection, 50)
+    imsave('/mnt/ssd/data/prettify_me/composites/{}.bmp'.format(i), composite)
 
 #Celeba dataset
 # h = 218
@@ -80,3 +75,11 @@ plt.show()
 # image_paths.sort()
 # landmarks = readPoints()
 # eye_pos = [(69, 111), (108, 111)]
+
+# fig, axs = plt.subplots(3, 3, facecolor='w', edgecolor='k')
+# fig.subplots_adjust(hspace=.001, wspace=.001)
+# axs = axs.ravel()
+#
+# for i in range(9):
+#     axs[i].imshow(create_random_composite(selection))
+# plt.show()
