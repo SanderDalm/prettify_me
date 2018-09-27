@@ -52,7 +52,7 @@ cyc_loss_a = tf.losses.absolute_difference(a_real, a2b2a)
 cyc_loss_b = tf.losses.absolute_difference(b_real, b2a2b)
 
 # Sum loss
-g_loss = g_loss_a2b + g_loss_b2a + cyc_loss_a * 10.0 + cyc_loss_b * 10.0 + identity_loss
+g_loss = g_loss_a2b + g_loss_b2a + cyc_loss_a * 10.0 + cyc_loss_b * 10.0
 
 # Discriminator losses
 # Discriminator a losses
@@ -90,9 +90,10 @@ sess.run(init_op)
 saver = tf.train.Saver(max_to_keep=None)
 
 #'''train'''
-for i in range(1, 30001):
+for i in range(1, 100001):
 
     a_real_batch, b_real_batch = batchgen.generate_batch(batch_size)
+    a_real_batch, b_real_batch = (a_real_batch * 2) - 1, (b_real_batch * 2) - 1
 
     # train G a+b
     g_summary_opt = sess.run([g_train_op], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
@@ -104,12 +105,12 @@ for i in range(1, 30001):
     d_summary_b_opt = sess.run([d_b_train_op], feed_dict={a_real: a_real_batch, b_real: b_real_batch})
 
     # save sample
-    if i % 100 == 0:
+    if i % 1000 == 0:
         a2b_output, a2b2a_output, b2a_output, b2a2b_output = sess.run([a2b, a2b2a, b2a, b2a2b],
                                                                       feed_dict={a_real: a_real_batch[0:1],
                                                                                  b_real: b_real_batch[0:1]})
         sample = np.concatenate(
-            [(a_real_batch[0:1] * 2) - 1, a2b_output, a2b2a_output, (b_real_batch[0:1] * 2) - 1, b2a_output,
+            [a_real_batch[0:1], a2b_output, a2b2a_output, b_real_batch[0:1], b2a_output,
              b2a2b_output], axis=1)
         sample = sample.reshape(crop_size * 6, crop_size, 3)
         save_path = 'cycle_gan/samples/sample_{}.jpg'.format(i)
@@ -117,6 +118,6 @@ for i in range(1, 30001):
         print('Sample saved to {}.'.format(save_path))
 
     # save model
-    if i % 1000 == 0:
+    if i % 10000 == 0:
         save_path = saver.save(sess, 'cycle_gan/models/nn_{}.ckpt'.format(i))
         print('Model saved to {}.'.format(save_path))

@@ -153,7 +153,7 @@ sess.run(assign_ops)
 
 
 losses = []
-for i in range(0, 10001):
+for i in range(0, 4001):
     a_real_batch, b_real_batch = batchgen.generate_batch(batch_size)
     a_real_batch, b_real_batch = (a_real_batch*2)-1, (b_real_batch*2)-1
 
