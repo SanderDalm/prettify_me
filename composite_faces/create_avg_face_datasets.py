@@ -64,7 +64,7 @@ def create_random_composite(selection, n):
 
     return composite
 
-for i in range(100):
+for i in range(1000):
     composite = create_random_composite(selection, 50)
     imsave('/mnt/ssd/data/prettify_me/composites/{}.bmp'.format(i), composite)
 

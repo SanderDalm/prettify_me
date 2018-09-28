@@ -3,15 +3,40 @@ from functools import partial
 import numpy as np
 from scipy.misc import imsave
 import tensorflow as tf
+from glob import glob
 
-from cycle_gan.two_class_batch_generator import Men_Women_BatchGenerator
+from cycle_gan.two_class_batch_generator import TwoClassBatchGenerator
 import cycle_gan.nn as nn
 import config
 
 crop_size = 100
 lr = .0001
 batch_size = 16
-batchgen = Men_Women_BatchGenerator(config.datadir, height=crop_size, width=crop_size)
+
+########################
+# Batch gen
+########################
+file_list_a = glob(config.datadir+'/UTKFace/*')
+mislabeled = []
+for x in file_list_a:
+    try:
+        age = x.split('_')[-4].split('/')[-1]
+        int(age)
+    except:
+        mislabeled.append(x)
+
+file_list_a = [x for x in file_list_a if x not in mislabeled]
+
+
+file_list_a = [x for x in file_list_a if 18 < int(x.split('_')[-4].split('/')[-1]) < 40] # young
+file_list_a = [x for x in file_list_a if x.split('_')[-2]=='2']  # asian
+file_list_a = [x for x in file_list_a if x.split('_')[-3]=='1'] # women
+
+
+file_list_b = glob(config.datadir+'/composites/*')
+
+batchgen = TwoClassBatchGenerator(file_list_a=file_list_a, file_list_b=file_list_b, height=crop_size, width=crop_size)
+
 
 #""" graph """
 # models
