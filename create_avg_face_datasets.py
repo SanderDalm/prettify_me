@@ -3,11 +3,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from glob import glob
 from scipy.misc import imsave
+import config
 
 # UTKF dataset
 h = 200
 w = 200
-image_paths = glob('/mnt/ssd/data/prettify_me/UTKFace/*.jpg')
+image_paths = glob(config.datadir+'/UTKFace/*.jpg')
+
 mislabeled = []
 
 for x in image_paths:
@@ -66,7 +68,7 @@ def create_random_composite(selection, n):
 
 for i in range(1000):
     composite = create_random_composite(selection, 50)
-    imsave('/mnt/ssd/data/prettify_me/composites/{}.bmp'.format(i), composite)
+    imsave(config.datadir+'/composites/{}.bmp'.format(i), composite)
 
 #Celeba dataset
 # h = 218

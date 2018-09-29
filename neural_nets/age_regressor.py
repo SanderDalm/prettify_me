@@ -1,5 +1,5 @@
 import tensorflow as tf
-from age_regressor.tf_utils import Dense, CNN, augment
+from tf_utils.tf_utils import Dense, CNN, augment
 
 class AgeRegressor:
 
@@ -44,7 +44,7 @@ class AgeRegressor:
                                     name='checkpoint_saver')
 
 
-    def train(self, num_steps, batchgen, batch_size, dropout_rate, augment, lr, decay, checkpoint='models/neural_net'):
+    def train(self, num_steps, batchgen, batch_size, dropout_rate, augment, lr, decay, checkpoint='resnet_model/neural_net'):
 
         loss_list = []
         val_loss_list = []

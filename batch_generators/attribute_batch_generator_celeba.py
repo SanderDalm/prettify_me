@@ -7,7 +7,7 @@ from scipy.misc import imread, imresize
 import numpy as np
 from glob import glob
 
-class BatchGenerator:
+class AttributeBatchGenerator:
 
     def __init__(self, path=None, height=218, width=178, n_train=180000):
 

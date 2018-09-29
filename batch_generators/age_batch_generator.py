@@ -32,7 +32,7 @@ def get_meta(mat_path, db):
     return full_path, dob, gender, photo_taken, face_score, second_face_score, age
 
 
-class BatchGenerator:
+class AgeBatchGenerator:
 
     def __init__(self, path=None, height=400, width=275, n_train=20000, datasets=[]):
 
