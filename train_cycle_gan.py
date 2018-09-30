@@ -40,8 +40,8 @@ batchgen = TwoClassBatchGenerator(file_list_a=file_list_a, file_list_b=file_list
 # Cycle Gan
 ########################
 
-#gan = CycleGan()
-gan = IdentityGan()
+gan = CycleGan()
+#gan = IdentityGan()
 
 #'''train'''
 for i in range(1, 100001):
