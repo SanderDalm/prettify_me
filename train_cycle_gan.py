@@ -59,7 +59,7 @@ for i in range(1, 100001):
     d_summary_b_opt = gan.sess.run([gan.d_b_train_op], feed_dict={gan.a_real: a_real_batch, gan.b_real: b_real_batch})
 
     # save sample
-    if i % 10 == 0:
+    if i % 1000 == 0:
         a2b_output, a2b2a_output, b2a_output, b2a2b_output = gan.sess.run([gan.a2b, gan.a2b2a, gan.b2a, gan.b2a2b],
                                                                       feed_dict={gan.a_real: a_real_batch[0:1],
                                                                                  gan.b_real: b_real_batch[0:1]})
@@ -72,6 +72,6 @@ for i in range(1, 100001):
         print('Sample saved to {}.'.format(save_path))
 
     # save model
-    if i % 10 == 0:
+    if i % 1000 == 0:
         save_path = gan.saver.save(gan.sess, 'models/cycle_gan_{}.ckpt'.format(i))
         print('Model saved to {}.'.format(save_path))

@@ -2,7 +2,6 @@ from functools import partial
 import tensorflow as tf
 import neural_nets.nn as nn
 
-
 class SimpleGan:
 
     def __init__(self,

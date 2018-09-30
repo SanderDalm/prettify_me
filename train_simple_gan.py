@@ -14,24 +14,25 @@ batch_size = 16
 ########################
 # Batch gen
 ########################
-# file_list_a = glob(config.datadir+'/UTKFace/*')
-# mislabeled = []
-# for x in file_list_a:
-#     try:
-#         age = x.split('_')[-4].split('/')[-1]
-#         int(age)
-#     except:
-#         mislabeled.append(x)
-#
-# file_list_a = [x for x in file_list_a if x not in mislabeled]
-#
-#
+file_list_a = glob(config.datadir+'/UTKFace/*')
+mislabeled = []
+for x in file_list_a:
+    try:
+        age = x.split('_')[-4].split('/')[-1]
+        int(age)
+    except:
+        mislabeled.append(x)
+
+file_list_a = [x for x in file_list_a if x not in mislabeled]
+
+
 # file_list_a = [x for x in file_list_a if 18 < int(x.split('_')[-4].split('/')[-1]) < 40] # young
 # file_list_a = [x for x in file_list_a if x.split('_')[-2]=='2']  # asian
 # file_list_a = [x for x in file_list_a if x.split('_')[-3]=='1'] # women
 
-file_list_a = glob(config.datadir+'/composites/*')
-file_list_b = glob(config.datadir+'/composites/*')
+#file_list_a = glob(config.datadir+'/composites/*')
+#file_list_b = glob(config.datadir+'/composites/*')
+file_list_b = file_list_a
 
 batchgen = TwoClassBatchGenerator(file_list_a=file_list_a, file_list_b=file_list_b, height=crop_size, width=crop_size)
 
@@ -56,7 +57,7 @@ for i in range(1, 100001):
     _ = gan.sess.run([gan.d_train_op], feed_dict={gan.real: real, gan.noise: noise_batch})
 
     # save sample
-    if i % 10 == 0:
+    if i % 1000 == 0:
         samples = gan.sess.run([gan.generator_output],
                                feed_dict={gan.noise: noise_batch[0:6]})
         sample = np.concatenate([samples], axis=1)
@@ -67,6 +68,6 @@ for i in range(1, 100001):
         print('Sample saved to {}.'.format(save_path))
 
     # save model
-    if i % 10 == 0:
+    if i % 1000 == 0:
         save_path = gan.saver.save(gan.sess, 'models/simple_gan_{}.ckpt'.format(i))
         print('Model saved to {}.'.format(save_path))
