@@ -36,13 +36,15 @@ file_list_b = glob(config.datadir+'/composites/*')
 batchgen = TwoClassBatchGenerator(file_list_a=file_list_a, file_list_b=file_list_b, height=crop_size, width=crop_size)
 
 ########################
-# Cycle Gan
+# Identity gan
 ########################
 
-gan = IdentityGan(identity_weight=5)
+gan = IdentityGan(identity_weight=25)
 
-#'''train'''
-for i in range(1, 100001):
+i = 0
+while True:
+
+    i += 1
 
     face_batch, composite_batch = batchgen.generate_batch(batch_size)
     face_batch, composite_batch = (face_batch * 2) - 1, (composite_batch * 2) - 1

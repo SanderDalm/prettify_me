@@ -42,8 +42,10 @@ batchgen = TwoClassBatchGenerator(file_list_a=file_list_a, file_list_b=file_list
 
 gan = SimpleGan()
 
-#'''train'''
-for i in range(1, 100001):
+i = 0
+while True:
+
+    i += 1
 
     a_real_batch, b_real_batch = batchgen.generate_batch(batch_size)
     a_real_batch, b_real_batch = (a_real_batch * 2) - 1, (b_real_batch * 2) - 1
