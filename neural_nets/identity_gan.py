@@ -1,9 +1,8 @@
 from functools import partial
 import tensorflow as tf
+import neural_nets.nn as nn
 from tensorflow.python import pywrap_tensorflow
 import importlib
-
-import neural_nets.nn as nn
 
 
 class IdentityGan:
@@ -27,83 +26,51 @@ class IdentityGan:
         def get_identity_vector(img, reuse):
             with tf.variable_scope('facenet', reuse=reuse):
                 prelogits, endpoints = network.inference(images=img, keep_probability=1, phase_train=False,
-                                                    bottleneck_layer_size=512, weight_decay=0.0)
-
+                                                         bottleneck_layer_size=512, weight_decay=0.0)
 
                 embeddings = tf.nn.l2_normalize(prelogits, 1, 1e-10, name='embeddings')
                 return embeddings
 
-
         #""" graph """
         # resnet_model
-        self.generator_a2b = partial(nn.generator, scope='a2b')
-        self.generator_b2a = partial(nn.generator, scope='b2a')
-        self.discriminator_a = partial(nn.discriminator, scope='a')
-        self.discriminator_b = partial(nn.discriminator, scope='b')
+        self.generator = partial(nn.generator, scope='generator')
+        self.discriminator = partial(nn.discriminator, scope='discriminator')
+
 
         # Placeholders
-        self.a_real = tf.placeholder(tf.float32, shape=[None, crop_size, crop_size, 3])
-        self.b_real = tf.placeholder(tf.float32, shape=[None, crop_size, crop_size, 3])
+        self.real = tf.placeholder(tf.float32, shape=[None, crop_size, crop_size, 3])
+        self.input_face = tf.placeholder(tf.float32, shape=[None, crop_size, crop_size, 3])
 
         # Generator outputs
-        self.a2b = self.generator_a2b(self.a_real)
-        self.a2b2a = self.generator_b2a(self.a2b)
-
-        self.b2a = self.generator_b2a(self.b_real)
-        self.b2a2b = self.generator_a2b(self.b2a)
+        self.generator_output = self.generator(self.input_face)
 
         # Discriminator outputs
-        # a2b
-        self.a_logit = self.discriminator_a(self.a_real)
-        self.b2a_logit = self.discriminator_a(self.b2a)
-
-        # b2a
-        self.b_logit = self.discriminator_b(self.b_real)
-        self.a2b_logit = self.discriminator_b(self.a2b)
-
-        # Generator losses
-        # Domain loss
-        self.g_loss_a2b = tf.losses.mean_squared_error(self.a2b_logit, tf.ones_like(self.a2b_logit))
-        self.g_loss_b2a = tf.losses.mean_squared_error(self.b2a_logit, tf.ones_like(self.b2a_logit))
-
-        # Cycle loss
-        self.cyc_loss_a = tf.losses.absolute_difference(self.a_real, self.a2b2a)
-        self.cyc_loss_b = tf.losses.absolute_difference(self.b_real, self.b2a2b)
+        self.discriminator_output_real = self.discriminator(self.real)
+        self.discriminator_output_fake = self.discriminator(self.generator_output)
 
         # Identity loss
-        self.identity_a_before = get_identity_vector(self.a_real, reuse=False)
-        self.identity_a_after = get_identity_vector(self.a2b, reuse=True)
-        self.identity_diff_a = tf.norm(self.identity_a_before - self.identity_a_after, axis=1)
+        self.identity_before = get_identity_vector(self.input_face, reuse=False)
+        self.identity_after = get_identity_vector(self.generator_output, reuse=True)
+        self.identity_loss = tf.norm(self.identity_before - self.identity_after, axis=1)
 
-        self.identity_b_before = get_identity_vector(self.b_real, reuse=True)
-        self.identity_b_after = get_identity_vector(self.b2a, reuse=True)
-        self.identity_diff_b = tf.norm(self.identity_b_before - self.identity_b_after, axis=1)
+        # Generator loss
+        self.g_loss = tf.losses.mean_squared_error(self.discriminator_output_fake, tf.ones_like(self.discriminator_output_fake))
+        self.g_loss = self.g_loss + self.identity_loss
 
-        self.identity_loss = tf.reduce_mean(self.identity_diff_a + self.identity_diff_b)
+        # Discriminator loss
+        self.d_loss_real = tf.losses.mean_squared_error(self.discriminator_output_real, tf.ones_like(self.discriminator_output_real))
+        self.d_loss_fake = tf.losses.mean_squared_error(self.discriminator_output_fake, tf.zeros_like(self.discriminator_output_fake))
+        self.d_loss = self.d_loss_real + self.d_loss_fake
 
-        # Sum loss
-        self.g_loss = self.g_loss_a2b + self.g_loss_b2a + self.cyc_loss_a * 10.0 + self.cyc_loss_b * 10.0 + self.identity_loss
-
-        # Discriminator losses
-        # Discriminator a losses
-        self.d_loss_a_real = tf.losses.mean_squared_error(self.a_logit, tf.ones_like(self.a_logit))
-        self.d_loss_b2a = tf.losses.mean_squared_error(self.b2a_logit, tf.zeros_like(self.b2a_logit))
-        self.d_loss_a = self.d_loss_a_real + self.d_loss_b2a
-
-        # Discriminator b losses
-        self.d_loss_b_real = tf.losses.mean_squared_error(self.b_logit, tf.ones_like(self.b_logit))
-        self.d_loss_a2b = tf.losses.mean_squared_error(self.a2b_logit, tf.zeros_like(self.a2b_logit))
-        self.d_loss_b = self.d_loss_b_real + self.d_loss_a2b
 
         # Optimization
         t_var = tf.trainable_variables()
-        d_a_var = [var for var in t_var if 'a_discriminator' in var.name]
-        d_b_var = [var for var in t_var if 'b_discriminator' in var.name]
-        g_var = [var for var in t_var if 'a2b_generator' in var.name or 'b2a_generator' in var.name]
+        d_var = [var for var in t_var if 'discriminator' in var.name]
+        g_var = [var for var in t_var if 'generator' in var.name]
 
-        self.d_a_train_op = tf.train.AdamOptimizer(lr, beta1=0.5).minimize(self.d_loss_a, var_list=d_a_var)
-        self.d_b_train_op = tf.train.AdamOptimizer(lr, beta1=0.5).minimize(self.d_loss_b, var_list=d_b_var)
+        self.d_train_op = tf.train.AdamOptimizer(lr, beta1=0.5).minimize(self.d_loss, var_list=d_var)
         self.g_train_op = tf.train.AdamOptimizer(lr, beta1=0.5).minimize(self.g_loss, var_list=g_var)
+
 
         # """ train """
         # ''' init '''
@@ -124,10 +91,11 @@ class IdentityGan:
                 value_dict[key] = reader.get_tensor(key)
             return value_dict
 
-        #value_dict = get_tensors_in_checkpoint_file('resnet_model/20180402-114759/model-20180402-114759.ckpt-275')
-        value_dict = get_tensors_in_checkpoint_file('resnet_model/20180408-102900/model-20180408-102900.ckpt-90')
+        # value_dict = get_tensors_in_checkpoint_file('resnet_model/20180402-114759/model-20180402-114759.ckpt-275')
+        value_dict = get_tensors_in_checkpoint_file(
+            'neural_nets/resnet_model/20180408-102900/model-20180408-102900.ckpt-90')
 
-        #for var in tf.trainable_variables():
+        # for var in tf.trainable_variables():
         #    print(var.name)
 
         facenet_variables = [var for var in tf.trainable_variables() if var.name.find('facenet') > -1]
@@ -137,5 +105,5 @@ class IdentityGan:
             varname = var.name[8:-2]
             value = value_dict[varname]
             assign_ops.append(var.assign(value))
-            #print(var.name)
+            # print(var.name)
         self.sess.run(assign_ops)
