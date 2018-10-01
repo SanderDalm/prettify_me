@@ -70,6 +70,6 @@ for i in range(1, 100001):
         print('Sample saved to {}.'.format(save_path))
 
     # save model
-    if i % 1000 == 0:
+    if i % 10000 == 0:
         save_path = gan.saver.save(gan.sess, 'models/cycle_gan_{}.ckpt'.format(i))
         print('Model saved to {}.'.format(save_path))
