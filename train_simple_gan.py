@@ -60,7 +60,7 @@ for i in range(1, 100001):
     if i % 1000 == 0:
         samples = gan.sess.run([gan.generator_output],
                                feed_dict={gan.noise: noise_batch[0:6]})
-        sample = np.concatenate([samples], axis=1)
+        sample = np.concatenate([samples], axis=0)
 
         sample = sample.reshape(crop_size * 6, crop_size, 3)
         save_path = 'samples/simple_gan_sample_{}.jpg'.format(i)

@@ -63,7 +63,7 @@ for i in range(1, 100001):
                                                                                  gan.b_real: b_real_batch[0:1]})
         sample = np.concatenate(
             [a_real_batch[0:1], a2b_output, a2b2a_output, b_real_batch[0:1], b2a_output,
-             b2a2b_output], axis=1)
+             b2a2b_output], axis=0)
         sample = sample.reshape(crop_size * 6, crop_size, 3)
         save_path = 'samples/cycle_gan_sample_{}.jpg'.format(i)
         imsave(save_path, sample)

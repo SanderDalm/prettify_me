@@ -51,11 +51,11 @@ class IdentityGan:
         # Identity loss
         self.identity_before = get_identity_vector(self.input_face, reuse=False)
         self.identity_after = get_identity_vector(self.generator_output, reuse=True)
-        self.identity_loss = tf.norm(self.identity_before - self.identity_after, axis=1)
+        self.identity_loss = tf.reduce_mean(tf.norm(self.identity_before - self.identity_after, axis=1))
 
         # Generator loss
-        self.g_loss = tf.losses.mean_squared_error(self.discriminator_output_fake, tf.ones_like(self.discriminator_output_fake))
-        self.g_loss = self.g_loss + self.identity_loss
+        self.g_loss_without_identity = tf.losses.mean_squared_error(self.discriminator_output_fake, tf.ones_like(self.discriminator_output_fake))
+        self.g_loss = self.g_loss_without_identity + self.identity_loss
 
         # Discriminator loss
         self.d_loss_real = tf.losses.mean_squared_error(self.discriminator_output_real, tf.ones_like(self.discriminator_output_real))
