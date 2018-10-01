@@ -9,7 +9,8 @@ class IdentityGan:
 
     def __init__(self,
                  crop_size=100,
-                 lr=.0001):
+                 lr=.0001,
+                 identity_weight=1):
 
         ##################
         # session
@@ -55,7 +56,7 @@ class IdentityGan:
 
         # Generator loss
         self.g_loss_without_identity = tf.losses.mean_squared_error(self.discriminator_output_fake, tf.ones_like(self.discriminator_output_fake))
-        self.g_loss = self.g_loss_without_identity + self.identity_loss*5
+        self.g_loss = self.g_loss_without_identity + self.identity_loss*identity_weight
 
         # Discriminator loss
         self.d_loss_real = tf.losses.mean_squared_error(self.discriminator_output_real, tf.ones_like(self.discriminator_output_real))
