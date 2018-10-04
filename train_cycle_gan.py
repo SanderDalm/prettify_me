@@ -14,24 +14,23 @@ batch_size = 16
 ########################
 # Batch gen
 ########################
-file_list_a = glob(config.datadir+'/UTKFace/*')
+file_list = glob(config.datadir+'/UTKFace/*')
+
 mislabeled = []
-for x in file_list_a:
+for x in file_list:
     try:
         age = x.split('_')[-4].split('/')[-1]
         int(age)
     except:
         mislabeled.append(x)
 
-file_list_a = [x for x in file_list_a if x not in mislabeled]
+file_list = [x for x in file_list if x not in mislabeled]
 
 
-file_list_a = [x for x in file_list_a if 18 < int(x.split('_')[-4].split('/')[-1]) < 40] # young
-file_list_a = [x for x in file_list_a if x.split('_')[-2]=='2']  # asian
-file_list_a = [x for x in file_list_a if x.split('_')[-3]=='1'] # women
+file_list_a = [x for x in file_list if 18 < int(x.split('_')[-4].split('/')[-1]) > 50] # old
+file_list_b = [x for x in file_list if 18 < int(x.split('_')[-4].split('/')[-1]) < 35] # young
 
-
-file_list_b = glob(config.datadir+'/composites/*')
+#file_list_b = glob(config.datadir+'/composites/*')
 
 batchgen = TwoClassBatchGenerator(file_list_a=file_list_a, file_list_b=file_list_b, height=crop_size, width=crop_size)
 
@@ -39,7 +38,7 @@ batchgen = TwoClassBatchGenerator(file_list_a=file_list_a, file_list_b=file_list
 # Cycle Gan
 ########################
 
-gan = CycleGan()
+gan = CycleGan(cycle_weight=5)
 
 i = 0
 while True:

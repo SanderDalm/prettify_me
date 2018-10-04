@@ -7,7 +7,8 @@ class CycleGan:
 
     def __init__(self,
                  crop_size=100,
-                 lr=.0001):
+                 lr=.0001,
+                 cycle_weight=1):
 
         #""" graph """
         # resnet_model
@@ -48,7 +49,7 @@ class CycleGan:
         self.cyc_loss_b = tf.losses.absolute_difference(self.b_real, self.b2a2b)
 
         # Sum loss
-        self.g_loss = self.g_loss_a2b + self.g_loss_b2a + self.cyc_loss_a * 10.0 + self.cyc_loss_b * 10.0
+        self.g_loss = self.g_loss_a2b + self.g_loss_b2a + self.cyc_loss_a * cycle_weight + self.cyc_loss_b * cycle_weight
 
         # Discriminator losses
         # Discriminator a losses

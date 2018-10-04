@@ -1,45 +1,42 @@
 import numpy as np
 from scipy.misc import imsave
 from glob import glob
-from neural_nets.identity_gan import IdentityGan
 import matplotlib.pyplot as plt
 
 from batch_generators.two_class_batch_generator import TwoClassBatchGenerator
+from batch_generators.batch_gen_utils import get_two_classes_celeba
+from neural_nets.identity_gan import IdentityGan
+
 import config
 
 
-crop_size = 100
+crop_size = 150
 lr = .0001
 batch_size = 16
 
 ########################
 # Batch gen
 ########################
-file_list_a = glob(config.datadir+'/UTKFace/*')
-mislabeled = []
-for x in file_list_a:
-    try:
-        age = x.split('_')[-4].split('/')[-1]
-        int(age)
-    except:
-        mislabeled.append(x)
 
-file_list_a = [x for x in file_list_a if x not in mislabeled]
+neg, pos = get_two_classes_celeba('attractive')
 
-
-file_list_a = [x for x in file_list_a if 18 < int(x.split('_')[-4].split('/')[-1]) < 40] # young
-file_list_a = [x for x in file_list_a if x.split('_')[-2]=='2']  # asian
-file_list_a = [x for x in file_list_a if x.split('_')[-3]=='1'] # women
-
-file_list_b = glob(config.datadir+'/composites/*')
-
-batchgen = TwoClassBatchGenerator(file_list_a=file_list_a, file_list_b=file_list_b, height=crop_size, width=crop_size)
+batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=pos, height=crop_size, width=crop_size)
+#
+# n, p = batchgen.generate_batch(32)
+#
+# n = np.concatenate([n[0:6]], axis=0)
+# n = n.reshape([crop_size * 6, crop_size, 3])
+# p = np.concatenate([p[0:6]], axis=0)
+# p = p.reshape([crop_size * 6, crop_size, 3])
+# t = np.concatenate([n, p], axis=1)
+#
+# plt.imshow(t)
 
 ########################
 # Identity gan
 ########################
 
-gan = IdentityGan(identity_weight=25)
+gan = IdentityGan(identity_weight=5)
 
 i = 0
 while True:
