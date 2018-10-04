@@ -1,16 +1,11 @@
 import numpy as np
 from scipy.misc import imsave
-from glob import glob
-import matplotlib.pyplot as plt
 
 from batch_generators.two_class_batch_generator import TwoClassBatchGenerator
 from batch_generators.batch_gen_utils import get_two_classes_celeba
 from neural_nets.identity_gan import IdentityGan
 
-import config
-
-
-crop_size = 150
+crop_size = 100
 lr = .0001
 batch_size = 16
 
@@ -36,7 +31,8 @@ batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=pos, height=crop_
 # Identity gan
 ########################
 
-gan = IdentityGan(identity_weight=5)
+gan = IdentityGan(crop_size=crop_size,
+                  identity_weight=5)
 
 i = 0
 while True:
@@ -67,10 +63,3 @@ while True:
     if i % 10000 == 0:
         save_path = gan.saver.save(gan.sess, 'models/identity_gan_{}.ckpt'.format(i))
         print('Model saved to {}.'.format(save_path))
-
-
-# face_batch, composite_batch = batchgen.generate_batch(batch_size)
-# face_batch, composite_batch = (face_batch * 2) - 1, (composite_batch * 2) - 1
-# id_loss, g_loss = gan.sess.run([gan.identity_loss, gan.g_loss_without_identity], feed_dict={gan.input_face: face_batch})
-# id_loss
-# g_loss

@@ -1,10 +1,9 @@
 import numpy as np
 from scipy.misc import imsave
-from glob import glob
 
 from batch_generators.two_class_batch_generator import TwoClassBatchGenerator
+from batch_generators.batch_gen_utils import get_two_classes_celeba
 from neural_nets.cycle_gan import CycleGan
-import config
 
 
 crop_size = 100
@@ -14,26 +13,11 @@ batch_size = 16
 ########################
 # Batch gen
 ########################
-file_list = glob(config.datadir+'/UTKFace/*')
 
-mislabeled = []
-for x in file_list:
-    try:
-        age = x.split('_')[-4].split('/')[-1]
-        int(age)
-    except:
-        mislabeled.append(x)
+neg, pos = get_two_classes_celeba('attractive')
 
-file_list = [x for x in file_list if x not in mislabeled]
-
-
-file_list_a = [x for x in file_list if 18 < int(x.split('_')[-4].split('/')[-1]) > 50] # old
-file_list_b = [x for x in file_list if 18 < int(x.split('_')[-4].split('/')[-1]) < 35] # young
-
-#file_list_b = glob(config.datadir+'/composites/*')
-
-batchgen = TwoClassBatchGenerator(file_list_a=file_list_a, file_list_b=file_list_b, height=crop_size, width=crop_size)
-
+batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=pos, height=crop_size, width=crop_size)
+#
 ########################
 # Cycle Gan
 ########################
