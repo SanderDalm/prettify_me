@@ -8,7 +8,8 @@ class CycleGan:
     def __init__(self,
                  crop_size=100,
                  lr=.0001,
-                 cycle_weight=1):
+                 cycle_weight=1,
+                 wasserstein=False):
 
         #""" graph """
         # resnet_model
@@ -28,7 +29,6 @@ class CycleGan:
         self.b2a = self.generator_b2a(self.b_real)
         self.b2a2b = self.generator_a2b(self.b2a)
 
-
         # Discriminator outputs
         # a2b
         self.a_logit = self.discriminator_a(self.a_real)
@@ -38,11 +38,33 @@ class CycleGan:
         self.b_logit = self.discriminator_b(self.b_real)
         self.a2b_logit = self.discriminator_b(self.a2b)
 
+        if wasserstein:
+            # D losses
+            self.d_loss_a = tf.reduce_mean(self.b2a_logit) - tf.reduce_mean(self.a_logit)
+            self.d_loss_b = tf.reduce_mean(self.a2b_logit) - tf.reduce_mean(self.b_logit)
 
-        # Generator losses
-        # Domain loss
-        self.g_loss_a2b = tf.losses.sigmoid_cross_entropy(logits=self.a2b_logit, multi_class_labels=tf.ones_like(self.a2b_logit))
-        self.g_loss_b2a = tf.losses.sigmoid_cross_entropy(logits=self.b2a_logit, multi_class_labels=tf.ones_like(self.b2a_logit))
+            # G losses
+            self.g_loss_a2b = - tf.reduce_mean(self.a2b_logit)
+            self.g_loss_b2a = - tf.reduce_mean(self.b2a_logit)
+
+        else:
+            # Generator losses
+            self.g_loss_a2b = tf.losses.sigmoid_cross_entropy(logits=self.a2b_logit, multi_class_labels=tf.ones_like(self.a2b_logit))
+            self.g_loss_b2a = tf.losses.sigmoid_cross_entropy(logits=self.b2a_logit, multi_class_labels=tf.ones_like(self.b2a_logit))
+
+            # Discriminator losses
+            self.d_loss_a_real = tf.losses.sigmoid_cross_entropy(logits=self.a_logit,
+                                                                 multi_class_labels=tf.ones_like(self.a_logit))
+            self.d_loss_b2a = tf.losses.sigmoid_cross_entropy(logits=self.b2a_logit,
+                                                              multi_class_labels=tf.zeros_like(self.b2a_logit))
+            self.d_loss_a = self.d_loss_a_real + self.d_loss_b2a
+
+            # Discriminator b losses
+            self.d_loss_b_real = tf.losses.sigmoid_cross_entropy(logits=self.b_logit,
+                                                                 multi_class_labels=tf.ones_like(self.b_logit))
+            self.d_loss_a2b = tf.losses.sigmoid_cross_entropy(logits=self.a2b_logit,
+                                                              multi_class_labels=tf.zeros_like(self.a2b_logit))
+            self.d_loss_b = self.d_loss_b_real + self.d_loss_a2b
 
 
         # Cycle loss
@@ -52,16 +74,7 @@ class CycleGan:
         # Sum loss
         self.g_loss = self.g_loss_a2b + self.g_loss_b2a + self.cyc_loss_a * cycle_weight + self.cyc_loss_b * cycle_weight
 
-        # Discriminator losses
-        # Discriminator a losses
-        self.d_loss_a_real = tf.losses.sigmoid_cross_entropy(logits=self.a_logit, multi_class_labels=tf.ones_like(self.a_logit))
-        self.d_loss_b2a = tf.losses.sigmoid_cross_entropy(logits=self.b2a_logit, multi_class_labels=tf.zeros_like(self.b2a_logit))
-        self.d_loss_a = self.d_loss_a_real + self.d_loss_b2a
 
-        # Discriminator b losses
-        self.d_loss_b_real = tf.losses.sigmoid_cross_entropy(logits=self.b_logit, multi_class_labels=tf.ones_like(self.b_logit))
-        self.d_loss_a2b = tf.losses.sigmoid_cross_entropy(logits=self.a2b_logit, multi_class_labels=tf.zeros_like(self.a2b_logit))
-        self.d_loss_b = self.d_loss_b_real + self.d_loss_a2b
 
         # Optimization
         t_var = tf.trainable_variables()

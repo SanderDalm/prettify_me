@@ -9,6 +9,7 @@ from neural_nets.identity_gan import IdentityGan
 crop_size = 200
 lr = .0001
 batch_size = 16
+wasserstein=True
 
 ########################
 # Batch gen
@@ -33,7 +34,8 @@ batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=pos, height=crop_
 ########################
 
 gan = IdentityGan(crop_size=crop_size,
-                  identity_weight=1)
+                  identity_weight=1,
+                  wasserstein=wasserstein)
 
 i = 0
 while True:

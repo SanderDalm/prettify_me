@@ -9,6 +9,7 @@ from neural_nets.cycle_gan import CycleGan
 crop_size = 128
 lr = .0001
 batch_size = 16
+wasserstein = True
 
 ########################
 # Batch gen
@@ -23,7 +24,8 @@ batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=pos, height=crop_
 ########################
 
 gan = CycleGan(cycle_weight=10,
-               crop_size=crop_size)
+               crop_size=crop_size,
+               wasserstein=wasserstein)
 
 i = 0
 while True:

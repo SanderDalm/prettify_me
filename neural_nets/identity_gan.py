@@ -56,10 +56,9 @@ class IdentityGan:
         self.identity_loss = tf.reduce_mean(tf.norm(self.identity_before - self.identity_after, axis=1))
 
         if wasserstein:
-            self.d_logits_real = tf.reduce_mean(self.self.discriminator_output_real)
-            self.d_logits_fake = tf.reduce_mean(self.self.discriminator_output_fake)
-            self.d_loss = tf.reduce_mean(self.d_logits_fake) - tf.reduce_mean(self.d_logits_real)
-            self.g_loss_without_identity = - tf.reduce_mean(self.d_logits_fake)
+            self.d_loss = tf.reduce_mean(self.discriminator_output_fake) - tf.reduce_mean(
+            self.discriminator_output_real)
+            self.g_loss_without_identity = - tf.reduce_mean(self.self.discriminator_output_fake)
         else:
             # Generator loss
             self.g_loss_without_identity = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_fake, multi_class_labels=tf.ones_like(self.discriminator_output_fake))
