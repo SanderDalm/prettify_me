@@ -9,6 +9,7 @@ from batch_generators.batch_gen_utils import get_two_classes_celeba
 crop_size = 100
 lr = .0001
 batch_size = 16
+wasserstein = True
 
 ########################
 # Batch gen
@@ -22,7 +23,9 @@ batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=pos, height=crop_
 # Cycle Gan
 ########################
 
-gan = SimpleGan()
+gan = SimpleGan(crop_size=crop_size,
+                lr=lr,
+                wasserstein=wasserstein)
 
 i = 0
 while True:

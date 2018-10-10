@@ -6,7 +6,8 @@ class SimpleGan:
 
     def __init__(self,
                  crop_size=100,
-                 lr=.0001):
+                 lr=.0001,
+                 wasserstein=False):
 
         #""" graph """
         # resnet_model
@@ -25,13 +26,20 @@ class SimpleGan:
         self.discriminator_output_real = self.discriminator(self.real)
         self.discriminator_output_fake = self.discriminator(self.generator_output)
 
-        # Generator loss
-        self.g_loss = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_fake, multi_class_labels=tf.ones_like(self.discriminator_output_fake))
+        if wasserstein:
+            self.d_logits_real = tf.reduce_mean(self.self.discriminator_output_real)
+            self.d_logits_fake = tf.reduce_mean(self.self.discriminator_output_fake)
+            self.d_loss = tf.reduce_mean(self.d_logits_fake) - tf.reduce_mean(self.d_logits_real)
+            self.g_loss = - tf.reduce_mean(self.d_logits_fake)
 
-        # Discriminator loss
-        self.d_loss_real = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_real, multi_class_labels=tf.ones_like(self.discriminator_output_real))
-        self.d_loss_fake = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_fake, multi_class_labels=tf.zeros_like(self.discriminator_output_fake))
-        self.d_loss = self.d_loss_real + self.d_loss_fake
+        else:
+            # Generator loss
+            self.g_loss = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_fake, multi_class_labels=tf.ones_like(self.discriminator_output_fake))
+
+            # Discriminator loss
+            self.d_loss_real = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_real, multi_class_labels=tf.ones_like(self.discriminator_output_real))
+            self.d_loss_fake = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_fake, multi_class_labels=tf.zeros_like(self.discriminator_output_fake))
+            self.d_loss = self.d_loss_real + self.d_loss_fake
 
 
         # Optimization

@@ -8,8 +8,7 @@ class CycleGan:
     def __init__(self,
                  crop_size=100,
                  lr=.0001,
-                 cycle_weight=1,
-                 wasserstein=False):
+                 cycle_weight=1):
 
         #""" graph """
         # resnet_model

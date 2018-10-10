@@ -10,7 +10,8 @@ class IdentityGan:
     def __init__(self,
                  crop_size=100,
                  lr=.0001,
-                 identity_weight=1):
+                 identity_weight=1,
+                 wasserstein=False):
 
         ##################
         # session
@@ -54,14 +55,21 @@ class IdentityGan:
         self.identity_after = get_identity_vector(self.generator_output, reuse=True)
         self.identity_loss = tf.reduce_mean(tf.norm(self.identity_before - self.identity_after, axis=1))
 
-        # Generator loss
-        self.g_loss_without_identity = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_fake, multi_class_labels=tf.ones_like(self.discriminator_output_fake))
-        self.g_loss = self.g_loss_without_identity + self.identity_loss*identity_weight
+        if wasserstein:
+            self.d_logits_real = tf.reduce_mean(self.self.discriminator_output_real)
+            self.d_logits_fake = tf.reduce_mean(self.self.discriminator_output_fake)
+            self.d_loss = tf.reduce_mean(self.d_logits_fake) - tf.reduce_mean(self.d_logits_real)
+            self.g_loss_without_identity = - tf.reduce_mean(self.d_logits_fake)
+        else:
+            # Generator loss
+            self.g_loss_without_identity = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_fake, multi_class_labels=tf.ones_like(self.discriminator_output_fake))
 
-        # Discriminator loss
-        self.d_loss_real = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_real, multi_class_labels=tf.ones_like(self.discriminator_output_real))
-        self.d_loss_fake = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_fake, multi_class_labels=tf.zeros_like(self.discriminator_output_fake))
-        self.d_loss = self.d_loss_real + self.d_loss_fake
+            # Discriminator loss
+            self.d_loss_real = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_real, multi_class_labels=tf.ones_like(self.discriminator_output_real))
+            self.d_loss_fake = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_fake, multi_class_labels=tf.zeros_like(self.discriminator_output_fake))
+            self.d_loss = self.d_loss_real + self.d_loss_fake
+
+        self.g_loss = self.g_loss_without_identity + self.identity_loss * identity_weight
 
 
         # Optimization
