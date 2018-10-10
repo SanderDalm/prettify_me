@@ -1,11 +1,12 @@
 import numpy as np
 from scipy.misc import imsave
+import matplotlib.pyplot as plt
 
 from batch_generators.two_class_batch_generator import TwoClassBatchGenerator
 from batch_generators.batch_gen_utils import get_two_classes_celeba
 from neural_nets.identity_gan import IdentityGan
 
-crop_size = 100
+crop_size = 200
 lr = .0001
 batch_size = 16
 
@@ -13,11 +14,11 @@ batch_size = 16
 # Batch gen
 ########################
 
-neg, pos = get_two_classes_celeba('attractive')
+neg, pos = get_two_classes_celeba(attr='young', HQ=False)
 
 batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=pos, height=crop_size, width=crop_size)
-#
-# n, p = batchgen.generate_batch(32)
+
+# n, p = batchgen.generate_batch(12)
 #
 # n = np.concatenate([n[0:6]], axis=0)
 # n = n.reshape([crop_size * 6, crop_size, 3])
@@ -32,7 +33,7 @@ batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=pos, height=crop_
 ########################
 
 gan = IdentityGan(crop_size=crop_size,
-                  identity_weight=5)
+                  identity_weight=1)
 
 i = 0
 while True:

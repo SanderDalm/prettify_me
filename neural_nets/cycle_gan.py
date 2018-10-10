@@ -8,7 +8,8 @@ class CycleGan:
     def __init__(self,
                  crop_size=100,
                  lr=.0001,
-                 cycle_weight=1):
+                 cycle_weight=1,
+                 wasserstein=False):
 
         #""" graph """
         # resnet_model
@@ -41,8 +42,9 @@ class CycleGan:
 
         # Generator losses
         # Domain loss
-        self.g_loss_a2b = tf.losses.mean_squared_error(self.a2b_logit, tf.ones_like(self.a2b_logit))
-        self.g_loss_b2a = tf.losses.mean_squared_error(self.b2a_logit, tf.ones_like(self.b2a_logit))
+        self.g_loss_a2b = tf.losses.sigmoid_cross_entropy(logits=self.a2b_logit, multi_class_labels=tf.ones_like(self.a2b_logit))
+        self.g_loss_b2a = tf.losses.sigmoid_cross_entropy(logits=self.b2a_logit, multi_class_labels=tf.ones_like(self.b2a_logit))
+
 
         # Cycle loss
         self.cyc_loss_a = tf.losses.absolute_difference(self.a_real, self.a2b2a)
@@ -53,13 +55,13 @@ class CycleGan:
 
         # Discriminator losses
         # Discriminator a losses
-        self.d_loss_a_real = tf.losses.mean_squared_error(self.a_logit, tf.ones_like(self.a_logit))
-        self.d_loss_b2a = tf.losses.mean_squared_error(self.b2a_logit, tf.zeros_like(self.b2a_logit))
+        self.d_loss_a_real = tf.losses.sigmoid_cross_entropy(logits=self.a_logit, multi_class_labels=tf.ones_like(self.a_logit))
+        self.d_loss_b2a = tf.losses.sigmoid_cross_entropy(logits=self.b2a_logit, multi_class_labels=tf.zeros_like(self.b2a_logit))
         self.d_loss_a = self.d_loss_a_real + self.d_loss_b2a
 
         # Discriminator b losses
-        self.d_loss_b_real = tf.losses.mean_squared_error(self.b_logit, tf.ones_like(self.b_logit))
-        self.d_loss_a2b = tf.losses.mean_squared_error(self.a2b_logit, tf.zeros_like(self.a2b_logit))
+        self.d_loss_b_real = tf.losses.sigmoid_cross_entropy(logits=self.b_logit, multi_class_labels=tf.ones_like(self.b_logit))
+        self.d_loss_a2b = tf.losses.sigmoid_cross_entropy(logits=self.a2b_logit, multi_class_labels=tf.zeros_like(self.a2b_logit))
         self.d_loss_b = self.d_loss_b_real + self.d_loss_a2b
 
         # Optimization

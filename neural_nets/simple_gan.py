@@ -26,11 +26,11 @@ class SimpleGan:
         self.discriminator_output_fake = self.discriminator(self.generator_output)
 
         # Generator loss
-        self.g_loss = tf.losses.mean_squared_error(self.discriminator_output_fake, tf.ones_like(self.discriminator_output_fake))
+        self.g_loss = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_fake, multi_class_labels=tf.ones_like(self.discriminator_output_fake))
 
         # Discriminator loss
-        self.d_loss_real = tf.losses.mean_squared_error(self.discriminator_output_real, tf.ones_like(self.discriminator_output_real))
-        self.d_loss_fake = tf.losses.mean_squared_error(self.discriminator_output_fake, tf.zeros_like(self.discriminator_output_fake))
+        self.d_loss_real = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_real, multi_class_labels=tf.ones_like(self.discriminator_output_real))
+        self.d_loss_fake = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_fake, multi_class_labels=tf.zeros_like(self.discriminator_output_fake))
         self.d_loss = self.d_loss_real + self.d_loss_fake
 
 

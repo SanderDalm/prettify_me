@@ -30,7 +30,16 @@ def get_old_young_UTKFACE():
     return file_list_a, file_list_b
 
 
-def get_two_classes_celeba(attr='young'):
+def get_two_classes_celeba(attr='young', HQ=False):
+
+    celeba_dir = 'img_align_celeba'
+    if HQ:
+        celeba_dir = 'celeba_hq/images'
+        celeba_hq_files = glob(join(config.datadir, celeba_dir)+'/*')
+        celeba_hq_files = [x.split('/')[-1].strip('.bmp') for x in celeba_hq_files]
+        celeba_hq_files = sorted(celeba_hq_files)
+        len(celeba_hq_files)
+
 
     if attr == 'young':
         trait_number = -1
@@ -43,7 +52,6 @@ def get_two_classes_celeba(attr='young'):
     positives = []
     with open(attribute_file, 'r') as f:
         for index, line in enumerate(f.readlines()):
-
             line_split = line.split(' ')
             line_split = [x.strip(' ') for x in line_split]
             line_split = [x.strip('\n') for x in line_split]
@@ -56,8 +64,22 @@ def get_two_classes_celeba(attr='young'):
                     filename = line_split[0]
                     filename = filename.replace('png', 'jpg')  # fix apparent error in file
                     label_vector = line_split[1:]
+
+                    # positive case
                     if label_vector[trait_number] == '-1':
-                        negatives.append(join(config.datadir, 'img_align_celeba', filename))
+                        if HQ:
+                            if filename in celeba_hq_files:
+                                negatives.append(join(config.datadir, celeba_dir, filename) + '.bmp')
+                        else:
+                            negatives.append(join(config.datadir, celeba_dir, filename))
+
+                    # negative case
                     if label_vector[trait_number] == '1':
-                        positives.append(join(config.datadir, 'img_align_celeba', filename))
+                        if HQ:
+                            if filename in celeba_hq_files:
+                                positives.append(join(config.datadir, celeba_dir, filename) + '.bmp')
+                        else:
+                            positives.append(join(config.datadir, celeba_dir, filename))
     return negatives, positives
+
+

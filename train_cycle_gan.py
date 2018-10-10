@@ -6,7 +6,7 @@ from batch_generators.batch_gen_utils import get_two_classes_celeba
 from neural_nets.cycle_gan import CycleGan
 
 
-crop_size = 100
+crop_size = 128
 lr = .0001
 batch_size = 16
 
@@ -14,19 +14,19 @@ batch_size = 16
 # Batch gen
 ########################
 
-neg, pos = get_two_classes_celeba('attractive')
+neg, pos = get_two_classes_celeba(attr='young', HQ=False)
 
 batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=pos, height=crop_size, width=crop_size)
-#
+
 ########################
 # Cycle Gan
 ########################
 
-gan = CycleGan(cycle_weight=5)
+gan = CycleGan(cycle_weight=10,
+               crop_size=crop_size)
 
 i = 0
 while True:
-
     i += 1
 
     a_real_batch, b_real_batch = batchgen.generate_batch(batch_size)
