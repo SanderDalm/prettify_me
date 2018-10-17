@@ -9,7 +9,9 @@ from neural_nets.identity_gan import IdentityGan
 crop_size = 200
 lr = .0001
 batch_size = 16
-wasserstein=True
+wasserstein = True
+g_iters = 1
+d_iters = 5
 
 ########################
 # Batch gen
@@ -40,16 +42,23 @@ gan = IdentityGan(crop_size=crop_size,
 i = 0
 while True:
 
-    i += 1
+    for _ in range(g_iters):
 
-    face_batch, composite_batch = batchgen.generate_batch(batch_size)
-    face_batch, composite_batch = (face_batch * 2) - 1, (composite_batch * 2) - 1
+        face_batch, composite_batch = batchgen.generate_batch(batch_size)
+        face_batch, composite_batch = (face_batch * 2) - 1, (composite_batch * 2) - 1
 
-    # train G
-    _ = gan.sess.run([gan.g_train_op], feed_dict={gan.input_face: face_batch})
+        # train G
+        _ = gan.sess.run([gan.g_train_op], feed_dict={gan.input_face: face_batch})
 
-    # train D
-    _ = gan.sess.run([gan.d_train_op], feed_dict={gan.input_face: face_batch, gan.real: composite_batch})
+    for _ in range(d_iters):
+
+        face_batch, composite_batch = batchgen.generate_batch(batch_size)
+
+        # train D
+        _ = gan.sess.run([gan.d_train_op], feed_dict={gan.input_face: face_batch, gan.real: composite_batch})
+
+        if wasserstein:
+            gan.sess.run(gan.clipping_op)
 
     # save sample
     if i % 1000 == 0:
@@ -63,6 +72,8 @@ while True:
         print('Sample saved to {}.'.format(save_path))
 
     # save model
-    if i % 10000 == 0:
+    if i % 100000 == 0:
         save_path = gan.saver.save(gan.sess, 'models/identity_gan_{}.ckpt'.format(i))
         print('Model saved to {}.'.format(save_path))
+
+    i += 1

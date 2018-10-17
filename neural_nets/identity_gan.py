@@ -58,7 +58,7 @@ class IdentityGan:
         if wasserstein:
             self.d_loss = tf.reduce_mean(self.discriminator_output_fake) - tf.reduce_mean(
             self.discriminator_output_real)
-            self.g_loss_without_identity = - tf.reduce_mean(self.self.discriminator_output_fake)
+            self.g_loss_without_identity = - tf.reduce_mean(self.discriminator_output_fake)
         else:
             # Generator loss
             self.g_loss_without_identity = tf.losses.sigmoid_cross_entropy(logits=self.discriminator_output_fake, multi_class_labels=tf.ones_like(self.discriminator_output_fake))
@@ -73,11 +73,15 @@ class IdentityGan:
 
         # Optimization
         t_var = tf.trainable_variables()
-        d_var = [var for var in t_var if 'discriminator' in var.name]
-        g_var = [var for var in t_var if 'generator' in var.name]
+        self.d_vars = [var for var in t_var if 'discriminator' in var.name]
+        self.g_vars = [var for var in t_var if 'generator' in var.name]
 
-        self.d_train_op = tf.train.AdamOptimizer(lr, beta1=0.5).minimize(self.d_loss, var_list=d_var)
-        self.g_train_op = tf.train.AdamOptimizer(lr, beta1=0.5).minimize(self.g_loss, var_list=g_var)
+        self.d_train_op = tf.train.AdamOptimizer(lr, beta1=0.5).minimize(self.d_loss, var_list=self.d_vars)
+        self.g_train_op = tf.train.AdamOptimizer(lr, beta1=0.5).minimize(self.g_loss, var_list=self.g_vars)
+
+        # Clipping op
+        self.clipping_op = tf.group(*[v.assign(tf.clip_by_value(
+            v, -0.01, 0.01)) for v in self.d_vars])
 
 
         # """ train """
