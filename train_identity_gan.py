@@ -11,7 +11,7 @@ lr = .0001
 batch_size = 16
 wasserstein = True
 g_iters = 1
-d_iters = 5
+d_iters = 1
 
 ########################
 # Batch gen
@@ -53,12 +53,13 @@ while True:
     for _ in range(d_iters):
 
         face_batch, composite_batch = batchgen.generate_batch(batch_size)
+        face_batch, composite_batch = (face_batch * 2) - 1, (composite_batch * 2) - 1
 
         # train D
         _ = gan.sess.run([gan.d_train_op], feed_dict={gan.input_face: face_batch, gan.real: composite_batch})
 
         if wasserstein:
-            gan.sess.run(gan.clipping_op)
+            pass#gan.sess.run(gan.clipping_op)
 
     # save sample
     if i % 1000 == 0:
@@ -72,7 +73,7 @@ while True:
         print('Sample saved to {}.'.format(save_path))
 
     # save model
-    if i % 100000 == 0:
+    if i % 10000 == 0:
         save_path = gan.saver.save(gan.sess, 'models/identity_gan_{}.ckpt'.format(i))
         print('Model saved to {}.'.format(save_path))
 
