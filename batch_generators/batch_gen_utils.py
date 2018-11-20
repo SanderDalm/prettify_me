@@ -43,8 +43,11 @@ def get_two_classes_celeba(attr='young', HQ=False):
 
     if attr == 'young':
         trait_number = -1
-    if attr == 'attractive':
+    elif attr == 'attractive':
         trait_number = 2
+    else:
+        raise AssertionError
+
 
     attribute_file = join(config.datadir, 'Anno/list_attr_celeba.txt')
 

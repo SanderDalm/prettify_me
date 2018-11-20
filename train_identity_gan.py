@@ -9,7 +9,7 @@ from neural_nets.identity_gan import IdentityGan
 crop_size = 200
 lr = .0001
 batch_size = 16
-wasserstein = True
+wasserstein = False
 g_iters = 1
 d_iters = 1
 
@@ -44,28 +44,28 @@ while True:
 
     for _ in range(g_iters):
 
-        face_batch, composite_batch = batchgen.generate_batch(batch_size)
-        face_batch, composite_batch = (face_batch * 2) - 1, (composite_batch * 2) - 1
+        neg_batch, pos_batch = batchgen.generate_batch(batch_size)
+        neg_batch, pos_batch = (neg_batch * 2) - 1, (pos_batch * 2) - 1
 
         # train G
-        _ = gan.sess.run([gan.g_train_op], feed_dict={gan.input_face: face_batch})
+        _ = gan.sess.run([gan.g_train_op], feed_dict={gan.input_face: neg_batch})
 
     for _ in range(d_iters):
 
-        face_batch, composite_batch = batchgen.generate_batch(batch_size)
-        face_batch, composite_batch = (face_batch * 2) - 1, (composite_batch * 2) - 1
+        neg_batch, pos_batch = batchgen.generate_batch(batch_size)
+        neg_batch, pos_batch = (neg_batch * 2) - 1, (pos_batch * 2) - 1
 
         # train D
-        _ = gan.sess.run([gan.d_train_op], feed_dict={gan.input_face: face_batch, gan.real: composite_batch})
+        _ = gan.sess.run([gan.d_train_op], feed_dict={gan.input_face: neg_batch, gan.real: pos_batch})
 
-        if wasserstein:
-            pass#gan.sess.run(gan.clipping_op)
+        # if wasserstein:
+        #     gan.sess.run(gan.clipping_op)
 
     # save sample
-    if i % 1000 == 0:
+    if i % 100 == 0:
         output = gan.sess.run([gan.generator_output],
-                               feed_dict={gan.input_face: face_batch[0:1]})
-        sample = np.concatenate([face_batch[0], output[0][0]], axis=0)
+                              feed_dict={gan.input_face: neg_batch[0:1]})
+        sample = np.concatenate([neg_batch[0], output[0][0]], axis=0)
 
         sample = sample.reshape(crop_size * 2, crop_size, 3)
         save_path = 'samples/identity_gan_sample_{}.jpg'.format(i)
