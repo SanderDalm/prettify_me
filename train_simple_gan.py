@@ -18,7 +18,6 @@ wasserstein = True
 anime_faces = get_anime()
 
 batchgen = OneClassBatchGenerator(file_list=anime_faces, height=crop_size, width=crop_size)
-imgs = batchgen.generate_batch(batch_size)
 
 ########################
 # Simple Gan

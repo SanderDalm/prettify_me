@@ -17,10 +17,14 @@ class TwoClassBatchGenerator:
     def read_img(self, path):
 
         image = imread(path)
-        if len(image.shape) == 2:
+        if len(image.shape) == 2:  # black and white to rgb
             image = gray2rgb(image)
-        if image.shape[0] != self.height or image.shape[1] != self.width:
+        if image.shape[2] == 4:    # remove alpha channel if needed
+            image = image[:, :, :3]
+        if image.shape[0] != self.height or image.shape[1] != self.width: # resize if needed
             image = imresize(image, [self.height, self.width, 3])
+
+
         image = image / 255
         return image
 
@@ -63,7 +67,9 @@ class OneClassBatchGenerator(TwoClassBatchGenerator):
                 path = self.file_list[index]
                 image = self.read_img(path)
                 imgs.append(image)
+
         return np.array(imgs)
+
 
 
 #
