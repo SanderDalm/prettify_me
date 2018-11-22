@@ -28,7 +28,7 @@ class SimpleGan:
 
         if wasserstein:
             self.d_loss = tf.reduce_mean(self.discriminator_output_fake) - tf.reduce_mean(self.discriminator_output_real)
-            self.g_loss = - tf.reduce_mean(self.self.discriminator_output_fake)
+            self.g_loss = -tf.reduce_mean(self.discriminator_output_fake)
 
         else:
             # Generator loss

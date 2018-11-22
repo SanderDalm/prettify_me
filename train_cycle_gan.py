@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.misc import imsave
 
-from batch_generators.two_class_batch_generator import TwoClassBatchGenerator
+from batch_generators.batch_generators import TwoClassBatchGenerator
 from batch_generators.batch_gen_utils import get_two_classes_celeba
 from neural_nets.cycle_gan import CycleGan
 

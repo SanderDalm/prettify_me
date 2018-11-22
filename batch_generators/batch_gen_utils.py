@@ -10,6 +10,9 @@ import config
 def get_composites():
     return glob(config.datadir+'/composites/*')
 
+def get_anime():
+    return glob(config.datadir + '/anime/*/*.png')
+
 
 def get_old_young_UTKFACE():
     file_list = glob(join(config.datadir, '/UTKFace/*'))
@@ -26,6 +29,10 @@ def get_old_young_UTKFACE():
 
     file_list_a = [x for x in file_list if 18 < int(x.split('_')[-4].split('/')[-1]) > 50]  # old
     file_list_b = [x for x in file_list if 18 < int(x.split('_')[-4].split('/')[-1]) < 35]  # young
+
+    # file_list_a = [x for x in file_list_a if 18 < int(x.split('_')[-4].split('/')[-1]) < 40] # young
+    # file_list_a = [x for x in file_list_a if x.split('_')[-2]=='2']  # asian
+    # file_list_a = [x for x in file_list_a if x.split('_')[-3]=='1'] # women
 
     return file_list_a, file_list_b
 
