@@ -72,7 +72,7 @@ def get_two_classes_celeba(attr='young', HQ=False):
                     continue
                 else:
                     filename = line_split[0]
-                    filename = filename.replace('png', 'jpg')  # fix apparent error in file
+                    filename = filename.replace('jpg', 'png')  # fix apparent error in file
                     label_vector = line_split[1:]
 
                     # positive case

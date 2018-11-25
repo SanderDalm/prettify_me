@@ -2,22 +2,24 @@ import numpy as np
 from scipy.misc import imsave
 
 from batch_generators.batch_generators import TwoClassBatchGenerator
-from batch_generators.batch_gen_utils import get_two_classes_celeba
+from batch_generators.batch_gen_utils import get_two_classes_celeba, get_anime
 from neural_nets.cycle_gan import CycleGan
 
 
-crop_size = 128
+crop_size = 100
 lr = .0001
 batch_size = 16
-wasserstein = True
+wasserstein = False
 
 ########################
 # Batch gen
 ########################
 
 neg, pos = get_two_classes_celeba(attr='young', HQ=False)
+real = neg + pos
 
-batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=pos, height=crop_size, width=crop_size)
+anime = get_anime()
+batchgen = TwoClassBatchGenerator(file_list_a=real, file_list_b=anime, height=crop_size, width=crop_size)
 
 ########################
 # Cycle Gan
@@ -44,7 +46,7 @@ while True:
     d_summary_b_opt = gan.sess.run([gan.d_b_train_op], feed_dict={gan.a_real: a_real_batch, gan.b_real: b_real_batch})
 
     # save sample
-    if i % 1000 == 0:
+    if i % 100 == 0:
         a2b_output, a2b2a_output, b2a_output, b2a2b_output = gan.sess.run([gan.a2b, gan.a2b2a, gan.b2a, gan.b2a2b],
                                                                       feed_dict={gan.a_real: a_real_batch[0:1],
                                                                                  gan.b_real: b_real_batch[0:1]})

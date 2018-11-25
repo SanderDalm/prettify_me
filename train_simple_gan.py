@@ -9,7 +9,7 @@ from batch_generators.batch_gen_utils import get_two_classes_celeba, get_anime
 crop_size = 128
 lr = .0001
 batch_size = 16
-wasserstein = True
+wasserstein = False
 
 ########################
 # Batch gen
