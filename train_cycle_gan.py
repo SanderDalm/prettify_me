@@ -15,11 +15,22 @@ wasserstein = False
 # Batch gen
 ########################
 
-neg, pos = get_two_classes_celeba(attr='young', HQ=False)
-real = neg + pos
+
+neg, pos = get_two_classes_celeba(attr='sex', HQ=False)
 
 anime = get_anime()
-batchgen = TwoClassBatchGenerator(file_list_a=real, file_list_b=anime, height=crop_size, width=crop_size)
+batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=anime, height=crop_size, width=crop_size)
+
+# n, p = batchgen.generate_batch(12)
+#
+# n = np.concatenate([n[0:6]], axis=0)
+# n = n.reshape([crop_size * 6, crop_size, 3])
+# p = np.concatenate([p[0:6]], axis=0)
+# p = p.reshape([crop_size * 6, crop_size, 3])
+# t = np.concatenate([n, p], axis=1)
+#
+# plt.imshow(t)
+
 
 ########################
 # Cycle Gan

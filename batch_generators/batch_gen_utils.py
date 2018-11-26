@@ -52,6 +52,8 @@ def get_two_classes_celeba(attr='young', HQ=False):
         trait_number = -1
     elif attr == 'attractive':
         trait_number = 2
+    elif attr == 'sex':
+        trait_number = 20
     else:
         raise AssertionError
 

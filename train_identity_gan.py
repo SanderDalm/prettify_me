@@ -3,10 +3,10 @@ from scipy.misc import imsave
 import matplotlib.pyplot as plt
 
 from batch_generators.batch_generators import TwoClassBatchGenerator
-from batch_generators.batch_gen_utils import get_two_classes_celeba
+from batch_generators.batch_gen_utils import get_two_classes_celeba, get_anime
 from neural_nets.identity_gan import IdentityGan
 
-crop_size = 200
+crop_size = 100
 lr = .0001
 batch_size = 16
 wasserstein = False
@@ -17,9 +17,11 @@ d_iters = 1
 # Batch gen
 ########################
 
-neg, pos = get_two_classes_celeba(attr='young', HQ=False)
 
-batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=pos, height=crop_size, width=crop_size)
+neg, pos = get_two_classes_celeba(attr='sex', HQ=False)
+
+anime = get_anime()
+batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=anime, height=crop_size, width=crop_size)
 
 # n, p = batchgen.generate_batch(12)
 #
