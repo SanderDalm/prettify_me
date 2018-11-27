@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.misc import imsave
+import matplotlib.pyplot as plt
 
 from batch_generators.batch_generators import TwoClassBatchGenerator
-from batch_generators.batch_gen_utils import get_two_classes_celeba, get_anime
+from batch_generators.batch_gen_utils import get_two_classes_celeba, get_anime, get_women_UTKFACE
 from neural_nets.cycle_gan import CycleGan
 
 
@@ -15,21 +16,21 @@ wasserstein = False
 # Batch gen
 ########################
 
-
-neg, pos = get_two_classes_celeba(attr='sex', HQ=False)
+women = get_women_UTKFACE()
 
 anime = get_anime()
-batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=anime, height=crop_size, width=crop_size)
 
-# n, p = batchgen.generate_batch(12)
-#
-# n = np.concatenate([n[0:6]], axis=0)
-# n = n.reshape([crop_size * 6, crop_size, 3])
-# p = np.concatenate([p[0:6]], axis=0)
-# p = p.reshape([crop_size * 6, crop_size, 3])
-# t = np.concatenate([n, p], axis=1)
-#
-# plt.imshow(t)
+batchgen = TwoClassBatchGenerator(file_list_a=women, file_list_b=anime, height=crop_size, width=crop_size)
+
+n, p = batchgen.generate_batch(12)
+
+n = np.concatenate([n[0:6]], axis=0)
+n = n.reshape([crop_size * 6, crop_size, 3])
+p = np.concatenate([p[0:6]], axis=0)
+p = p.reshape([crop_size * 6, crop_size, 3])
+t = np.concatenate([n, p], axis=1)
+
+plt.imshow(t)
 
 
 ########################

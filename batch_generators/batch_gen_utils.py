@@ -15,7 +15,7 @@ def get_anime():
 
 
 def get_old_young_UTKFACE():
-    file_list = glob(join(config.datadir, '/UTKFace/*'))
+    file_list = glob(join(config.datadir, 'UTKFace') + '/*')
 
     mislabeled = []
     for x in file_list:
@@ -35,6 +35,11 @@ def get_old_young_UTKFACE():
     # file_list_a = [x for x in file_list_a if x.split('_')[-3]=='1'] # women
 
     return file_list_a, file_list_b
+
+def get_women_UTKFACE():
+    file_list = glob(join(config.datadir, 'UTKFace') + '/*')
+    return [x for x in file_list if x.split('_')[-3]=='1'] # women
+
 
 
 def get_two_classes_celeba(attr='young', HQ=False):
@@ -74,7 +79,7 @@ def get_two_classes_celeba(attr='young', HQ=False):
                     continue
                 else:
                     filename = line_split[0]
-                    filename = filename.replace('jpg', 'png')  # fix apparent error in file
+                    #filename = filename.replace('jpg', 'png')  # fix apparent error in file
                     label_vector = line_split[1:]
 
                     # positive case
