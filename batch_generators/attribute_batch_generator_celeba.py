@@ -46,7 +46,6 @@ class AttributeBatchGenerator:
                         self.attributes = line_split
                     else:
                         filename = line_split[0]
-                        filename = filename.replace('jpg', 'png')  # fix apparent error in file
                         label_vector = line_split[1:]
                         label_vector = [0 if x == '-1' else 1 for x in label_vector]
                         label_dict[filename] = np.array(label_vector)

@@ -21,7 +21,7 @@ d_iters = 1
 neg, pos = get_two_classes_celeba(attr='sex', HQ=False)
 
 anime = get_anime()
-batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=anime, height=crop_size, width=crop_size)
+batchgen = TwoClassBatchGenerator(file_list_a=neg, file_list_b=pos, height=crop_size, width=crop_size)
 
 # n, p = batchgen.generate_batch(12)
 #
