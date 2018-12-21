@@ -27,8 +27,8 @@ def get_old_young_UTKFACE():
 
     file_list = [x for x in file_list if x not in mislabeled]
 
-    file_list_a = [x for x in file_list if 18 < int(x.split('_')[-4].split('/')[-1]) > 50]  # old
-    file_list_b = [x for x in file_list if 18 < int(x.split('_')[-4].split('/')[-1]) < 35]  # young
+    file_list_a = [x for x in file_list if int(x.split('_')[-4].split('/')[-1]) > 50]  # old
+    file_list_b = [x for x in file_list if 12 < int(x.split('_')[-4].split('/')[-1]) < 40]  # young
 
     # file_list_a = [x for x in file_list_a if 18 < int(x.split('_')[-4].split('/')[-1]) < 40] # young
     # file_list_a = [x for x in file_list_a if x.split('_')[-2]=='2']  # asian
